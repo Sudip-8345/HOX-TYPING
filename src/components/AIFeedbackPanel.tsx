@@ -1,32 +1,32 @@
+import { memo } from 'react'
 import { Card } from '@/components/ui/card'
-import { Brain } from '@phosphor-icons/react'
+import { Brain, Lightbulb } from '@phosphor-icons/react'
 
 interface AIFeedbackPanelProps {
-  feedback: string[]
+  tips: string[]
+  wpm: number
+  accuracy: number
 }
 
-export function AIFeedbackPanel({ feedback }: AIFeedbackPanelProps) {
+export const AIFeedbackPanel = memo(({ tips, wpm, accuracy }: AIFeedbackPanelProps) => {
   return (
-    <Card className="p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <Brain size={24} weight="fill" className="text-accent" />
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-          AI Feedback
-        </h3>
+    <Card className="p-4 bg-card/80 backdrop-blur">
+      <div className="flex items-center gap-2 mb-3">
+        <Brain size={20} weight="duotone" className="text-primary" />
+        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          Tips AI
+        </h4>
       </div>
-      <div className="space-y-2">
-        {feedback.length === 0 ? (
-          <p className="text-sm text-muted-foreground italic">
-            Start practicing to get AI feedback
-          </p>
-        ) : (
-          feedback.map((tip, idx) => (
-            <p key={idx} className="text-sm text-foreground leading-relaxed">
-              {tip}
-            </p>
-          ))
-        )}
+      <div className="space-y-2 text-xs text-foreground/90">
+        {tips.map((tip, index) => (
+          <div key={index} className="flex items-start gap-2">
+            <Lightbulb size={12} weight="fill" className="text-accent mt-0.5 flex-shrink-0" />
+            <p>{tip}</p>
+          </div>
+        ))}
       </div>
     </Card>
   )
-}
+})
+
+AIFeedbackPanel.displayName = 'AIFeedbackPanel'

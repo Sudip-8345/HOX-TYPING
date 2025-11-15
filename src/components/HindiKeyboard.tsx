@@ -174,157 +174,94 @@ const inscriptLayout = {
 }
 
 export function HindiKeyboard({ mode, pressedKey, className }: HindiKeyboardProps) {
-  const getLayout = (layoutType: string) => {
-    switch (layoutType) {
-      case 'mangal-kruti':
-        return mangalKrutiLayout
-      case 'inscript':
-        return inscriptLayout
-      default:
-        return remingtonLayout
-    }
-  }
-
   const isKeyPressed = (key: string) => {
     return pressedKey?.toLowerCase() === key.toLowerCase()
   }
 
-  const renderKeyboardLayout = (layoutType: string) => {
-    const layout = getLayout(layoutType)
-
-    return (
-      <div className="space-y-2">
-        <div className="flex gap-1 justify-center">
-          {layout.row1.map((key, idx) => (
-            <div
-              key={idx}
-              className={cn(
-                'flex flex-col items-center justify-center px-2 py-2 rounded border border-border bg-card min-w-[48px] h-[56px] transition-all',
-                isKeyPressed(key.eng) && 'bg-accent text-accent-foreground scale-105 shadow-lg',
-                'hover:bg-muted'
-              )}
-            >
-              <span className="text-xs text-muted-foreground font-mono">{key.eng}</span>
-              <span className="text-lg font-hindi font-semibold">{key.hindi}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex gap-1 justify-center pl-8">
-          {layout.row2.map((key, idx) => (
-            <div
-              key={idx}
-              className={cn(
-                'flex flex-col items-center justify-center px-2 py-2 rounded border border-border bg-card min-w-[48px] h-[56px] transition-all',
-                isKeyPressed(key.eng) && 'bg-accent text-accent-foreground scale-105 shadow-lg',
-                'hover:bg-muted'
-              )}
-            >
-              <span className="text-xs text-muted-foreground font-mono">{key.eng}</span>
-              <span className="text-lg font-hindi font-semibold">{key.hindi}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex gap-1 justify-center pl-12">
-          {layout.row3.map((key, idx) => (
-            <div
-              key={idx}
-              className={cn(
-                'flex flex-col items-center justify-center px-2 py-2 rounded border border-border bg-card min-w-[48px] h-[56px] transition-all',
-                isKeyPressed(key.eng) && 'bg-accent text-accent-foreground scale-105 shadow-lg',
-                'hover:bg-muted'
-              )}
-            >
-              <span className="text-xs text-muted-foreground font-mono">{key.eng}</span>
-              <span className="text-lg font-hindi font-semibold">{key.hindi}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex gap-1 justify-center pl-16">
-          {layout.row4.map((key, idx) => (
-            <div
-              key={idx}
-              className={cn(
-                'flex flex-col items-center justify-center px-2 py-2 rounded border border-border bg-card min-w-[48px] h-[56px] transition-all',
-                isKeyPressed(key.eng) && 'bg-accent text-accent-foreground scale-105 shadow-lg',
-                'hover:bg-muted'
-              )}
-            >
-              <span className="text-xs text-muted-foreground font-mono">{key.eng}</span>
-              <span className="text-lg font-hindi font-semibold">{key.hindi}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex gap-1 justify-center pt-2">
-          <div className="flex items-center justify-center px-8 py-2 rounded border border-border bg-card h-[56px] flex-1 max-w-[400px]">
-            <span className="text-sm text-muted-foreground">Space</span>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (mode === 'direct') {
-    return (
-      <Card className={cn('p-4', className)}>
-        <div className="text-center text-muted-foreground py-8">
-          <p className="text-sm">Direct Hindi input mode</p>
-          <p className="text-xs mt-2">Type directly in Hindi using your system keyboard</p>
-        </div>
-      </Card>
-    )
-  }
-
   return (
-    <Card className={cn('p-4', className)}>
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-semibold">Virtual Keyboard</h3>
-          <p className="text-xs text-muted-foreground mt-1">
-            {mode === 'phonetic' && 'Phonetic (Remington) - Type in English, get Hindi'}
-            {mode === 'mangal-kruti' && 'Mangal Kruti - Standard Hindi keyboard layout'}
-          </p>
-        </div>
-        <Badge variant="secondary" className="font-mono text-xs">
-          {mode === 'phonetic' ? 'Remington' : mode === 'mangal-kruti' ? 'Kruti Dev' : 'Direct'}
-        </Badge>
-      </div>
-
-      <Tabs defaultValue="remington" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-4">
-          <TabsTrigger value="remington">Remington</TabsTrigger>
-          <TabsTrigger value="mangal-kruti">Mangal Kruti</TabsTrigger>
-          <TabsTrigger value="inscript">Inscript</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="remington" className="mt-0">
-          {renderKeyboardLayout('remington')}
-        </TabsContent>
-        
-        <TabsContent value="mangal-kruti" className="mt-0">
-          {renderKeyboardLayout('mangal-kruti')}
-        </TabsContent>
-        
-        <TabsContent value="inscript" className="mt-0">
-          {renderKeyboardLayout('inscript')}
-        </TabsContent>
-      </Tabs>
-
-      <div className="mt-4 pt-4 border-t border-border">
-        <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-card border border-border"></div>
-            <span>Normal</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-accent"></div>
-            <span>Pressed</span>
+    <div className={cn('', className)}>
+      <div className="space-y-1">
+        <div className="flex gap-[3px] justify-center">
+          {remingtonLayout.row1.map((key, idx) => (
+            <div
+              key={idx}
+              className={cn(
+                'flex flex-col items-center justify-center px-1.5 py-1 rounded-sm bg-[#3a3a3a] min-w-[32px] h-[36px] transition-all text-xs',
+                isKeyPressed(key.eng) && 'bg-success scale-105',
+              )}
+            >
+              <span className="text-[10px] text-muted-foreground font-mono">{key.shift || key.eng}</span>
+              <span className="text-sm font-hindi">{key.hindi}</span>
+            </div>
+          ))}
+          <div className={cn('flex items-center justify-center px-2 py-1 rounded-sm bg-[#3a3a3a] min-w-[42px] h-[36px]')}>
+            <span className="text-[10px] text-muted-foreground">⌫</span>
           </div>
         </div>
+
+        <div className="flex gap-[3px] justify-center">
+          <div className={cn('flex items-center justify-center px-2 py-1 rounded-sm bg-[#3a3a3a] min-w-[36px] h-[36px]')}>
+            <span className="text-[10px] text-muted-foreground">Q</span>
+          </div>
+          {remingtonLayout.row2.map((key, idx) => (
+            <div
+              key={idx}
+              className={cn(
+                'flex flex-col items-center justify-center px-1.5 py-1 rounded-sm bg-[#3a3a3a] min-w-[32px] h-[36px] transition-all',
+                isKeyPressed(key.eng) && 'bg-success scale-105'
+              )}
+            >
+              <span className="text-[10px] text-muted-foreground font-mono">{key.eng.toUpperCase()}</span>
+              <span className="text-sm font-hindi">{key.hindi}</span>
+            </div>
+          ))}
+          <div className={cn('flex items-center justify-center px-2 py-1 rounded-sm bg-[#3a3a3a] min-w-[36px] h-[36px]')}>
+            <span className="text-[10px] text-muted-foreground">[</span>
+          </div>
+        </div>
+
+        <div className="flex gap-[3px] justify-center">
+          <div className={cn('flex items-center justify-center px-2 py-1 rounded-sm bg-[#3a3a3a] min-w-[42px] h-[36px]')}>
+            <span className="text-[10px] text-muted-foreground">A</span>
+          </div>
+          {remingtonLayout.row3.map((key, idx) => (
+            <div
+              key={idx}
+              className={cn(
+                'flex flex-col items-center justify-center px-1.5 py-1 rounded-sm bg-[#3a3a3a] min-w-[32px] h-[36px] transition-all',
+                isKeyPressed(key.eng) && 'bg-success scale-105'
+              )}
+            >
+              <span className="text-[10px] text-muted-foreground font-mono">{key.eng.toUpperCase()}</span>
+              <span className="text-sm font-hindi">{key.hindi}</span>
+            </div>
+          ))}
+          <div className={cn('flex items-center justify-center px-2 py-1 rounded-sm bg-[#3a3a3a] min-w-[48px] h-[36px]')}>
+            <span className="text-[10px] text-muted-foreground">A1</span>
+          </div>
+        </div>
+
+        <div className="flex gap-[3px] justify-center">
+          <div className={cn('flex items-center justify-center px-3 py-1 rounded-sm bg-[#3a3a3a] min-w-[52px] h-[36px]')}>
+            <span className="text-[10px] text-muted-foreground">⇧</span>
+          </div>
+          {remingtonLayout.row4.map((key, idx) => (
+            <div
+              key={idx}
+              className={cn(
+                'flex flex-col items-center justify-center px-1.5 py-1 rounded-sm bg-[#3a3a3a] min-w-[32px] h-[36px] transition-all',
+                isKeyPressed(key.eng) && 'bg-success scale-105'
+              )}
+            >
+              <span className="text-[10px] text-muted-foreground font-mono">{key.eng.toUpperCase()}</span>
+              <span className="text-sm font-hindi">{key.hindi}</span>
+            </div>
+          ))}
+          <div className={cn('flex items-center justify-center px-2 py-1 rounded-sm bg-[#3a3a3a] min-w-[42px] h-[36px]')}>
+            <span className="text-[10px] text-muted-foreground">⌫</span>
+          </div>
+        </div>
       </div>
-    </Card>
+    </div>
   )
 }

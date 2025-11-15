@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useKV } from '@github/spark/hooks'
 import { Button } from '@/components/ui/button'
@@ -6,6 +6,8 @@ import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { 
   ArrowLeft,
   ArrowCounterClockwise,
@@ -20,7 +22,10 @@ import {
   Fire,
   X,
   Backspace,
-  Keyboard
+  Keyboard,
+  Bell,
+  Gear,
+  User
 } from '@phosphor-icons/react'
 import { 
   Select,
@@ -36,6 +41,8 @@ import { AICoach } from '@/components/AICoach'
 import { ProgressChart } from '@/components/ProgressChart'
 import { HindiKeyboard } from '@/components/HindiKeyboard'
 import { TypingGuide } from '@/components/TypingGuide'
+import { RealTimeMetrics } from '@/components/RealTimeMetrics'
+import { AIFeedbackPanel } from '@/components/AIFeedbackPanel'
 import { toast } from 'sonner'
 import { 
   SessionData,
@@ -294,299 +301,125 @@ export function HindiTypingPractice() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header
-        language={language}
-        font={font}
-        duration={duration}
-        examMode={examMode}
-        soundEnabled={soundEnabled}
-        onLanguageChange={setLanguage}
-        onFontChange={setFont}
-        onDurationChange={setDuration}
-        onExamModeChange={setExamMode}
-        onSoundToggle={() => setSoundEnabled(!soundEnabled)}
-      />
-
-      <main className="container mx-auto px-4 md:px-6 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <Link to="/">
-            <Button variant="ghost" className="gap-2">
-              <ArrowLeft size={20} weight="bold" />
-              Home
-            </Button>
-          </Link>
-
-          <div className="flex items-center gap-2">
-            <TypingGuide />
-            
-            <Button
-              onClick={handleRestart}
-              variant="outline"
-              className="gap-2"
-              disabled={!isActive && !isComplete}
-            >
-              <ArrowCounterClockwise size={20} weight="bold" />
-              <span className="hidden sm:inline">Restart</span>
-            </Button>
-            
-            <Button
-              onClick={handlePause}
-              variant="outline"
-              className="gap-2"
-              disabled={!isActive || isComplete}
-            >
-              {isPaused ? (
-                <>
-                  <Play size={20} weight="fill" />
-                  <span className="hidden sm:inline">Resume</span>
-                </>
-              ) : (
-                <>
-                  <Pause size={20} weight="fill" />
-                  <span className="hidden sm:inline">Pause</span>
-                </>
-              )}
-            </Button>
-
-            {isActive && !isComplete && (
-              <Button
-                onClick={handleComplete}
-                className="gap-2"
-              >
-                <CheckCircle size={20} weight="fill" />
-                <span className="hidden sm:inline">Submit</span>
+    <div className="min-h-screen bg-[#1a1a1a] text-foreground">
+      <div className="border-b border-border/40 bg-[#1f1f1f]/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Hindi Typing Practice</h1>
+              <p className="text-sm text-muted-foreground">
+                Improve your Hindi typing speed and accuracy with real-time feedback
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell size={20} weight="duotone" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
               </Button>
-            )}
+              <Avatar>
+                <AvatarImage src="https://github.com/shadcn.png" />
+                <AvatarFallback><User size={20} /></AvatarFallback>
+              </Avatar>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="grid lg:grid-cols-[1fr_320px] gap-6">
+      <main className="container mx-auto px-4 md:px-6 py-6">
+        <div className="grid lg:grid-cols-[280px_1fr_320px] gap-6">
           <div className="space-y-6">
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <Timer size={24} weight="duotone" className="text-primary" />
-                  <div>
-                    <div className="text-3xl font-bold tabular-nums">
-                      {formatTime(timeRemaining >= 0 ? timeRemaining : timeElapsed)}
-                    </div>
-                    <div className="text-xs text-muted-foreground uppercase tracking-wide">
-                      {currentExamMode?.duration ? 'Time Remaining' : 'Time Elapsed'}
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-primary">{Math.round(progress)}%</div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">Complete</div>
+            <Card className="p-6 bg-[#242424]/80 backdrop-blur border-border/40">
+              <div className="flex items-center gap-3 mb-4">
+                <Avatar className="w-12 h-12">
+                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarFallback><User size={20} /></AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="text-sm text-muted-foreground">Session Progress: <span className="text-success font-semibold">{Math.round(progress)}%</span></div>
+                  <Progress value={progress} className="h-2 mt-2" />
                 </div>
               </div>
-              <Progress value={progress} className="h-2" />
+              <Button className="w-full gap-2 bg-success hover:bg-success/90 text-white">
+                <CheckCircle size={18} weight="fill" />
+                Exam Mode
+              </Button>
             </Card>
-
-            <div className="relative">
-              {isPaused && (
-                <div className="absolute inset-0 z-10 bg-background/80 backdrop-blur-sm flex items-center justify-center rounded-xl">
-                  <Card className="p-6 text-center">
-                    <Pause size={48} weight="duotone" className="mx-auto mb-2 text-primary" />
-                    <h3 className="text-lg font-semibold mb-2">Session Paused</h3>
-                    <p className="text-sm text-muted-foreground">Click Resume to continue</p>
-                  </Card>
-                </div>
-              )}
-              
-              {isComplete && (
-                <div className="absolute inset-0 z-10 bg-background/80 backdrop-blur-sm flex items-center justify-center rounded-xl">
-                  <Card className="p-8 text-center max-w-md">
-                    <CheckCircle size={64} weight="duotone" className="mx-auto mb-4 text-success" />
-                    <h3 className="text-2xl font-bold mb-2">Session Complete!</h3>
-                    <div className="grid grid-cols-2 gap-4 my-6">
-                      <div>
-                        <div className="text-3xl font-bold text-primary">{netWPM}</div>
-                        <div className="text-xs text-muted-foreground">Net WPM</div>
-                      </div>
-                      <div>
-                        <div className="text-3xl font-bold text-success">{accuracy}%</div>
-                        <div className="text-xs text-muted-foreground">Accuracy</div>
-                      </div>
-                    </div>
-                    <Button onClick={handleRestart} className="w-full gap-2">
-                      <ArrowCounterClockwise size={20} weight="bold" />
-                      Start New Session
-                    </Button>
-                    <Link to="/leaderboard" className="block mt-3">
-                      <Button variant="outline" className="w-full gap-2">
-                        <ChartLine size={20} weight="bold" />
-                        View Leaderboard
-                      </Button>
-                    </Link>
-                  </Card>
-                </div>
-              )}
-
-              <TypingDisplay
-                promptText={promptText}
-                userInput={displayInput}
-                currentIndex={currentIndex}
-                isComplete={isComplete}
-                fontClass={currentFontConfig?.className || 'font-mono'}
-              />
-            </div>
-
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Target size={20} weight="duotone" className="text-accent" />
-                  <h3 className="text-sm font-semibold uppercase tracking-wide">Your Input</h3>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Keyboard size={18} weight="duotone" className="text-muted-foreground" />
-                  <Select
-                    value={keyboardMode}
-                    onValueChange={(value) => {
-                      setKeyboardMode(value as TransliterationMode)
-                      toast.success(`Switched to ${value === 'direct' ? 'Direct Hindi' : value === 'phonetic' ? 'Phonetic (Google)' : 'Mangal Kruti'} keyboard`)
-                    }}
-                  >
-                    <SelectTrigger className="w-[180px] h-8 text-xs">
-                      <SelectValue placeholder="Select keyboard" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="direct">Direct Hindi</SelectItem>
-                      <SelectItem value="phonetic">Phonetic (Google)</SelectItem>
-                      <SelectItem value="mangal-kruti">Mangal Kruti</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <textarea
-                ref={inputRef}
-                value={userInput}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                disabled={isComplete}
-                placeholder={isActive ? "Start typing..." : "Click here or press any key to start..."}
-                className={`w-full min-h-[120px] p-4 rounded-lg border-2 border-input bg-background 
-                  text-lg md:text-xl leading-relaxed resize-none focus:outline-none focus:ring-2 
-                  focus:ring-ring focus:border-transparent transition-all
-                  ${currentFontConfig?.className || 'font-mono'}
-                  ${isComplete ? 'opacity-60' : ''}
-                `}
-              />
-              {keyboardMode !== 'direct' && displayInput && (
-                <div className={`mt-3 p-3 rounded-lg bg-muted/50 text-lg ${currentFontConfig?.className || 'font-mono'}`}>
-                  <div className="text-xs text-muted-foreground mb-1 font-sans uppercase tracking-wide">
-                    Hindi Output:
-                  </div>
-                  {displayInput}
-                </div>
-              )}
-              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Backspace size={14} />
-                  Backspace: {backspaceCount}
-                </span>
-                {keyboardMode !== 'direct' && (
-                  <Badge variant="secondary" className="text-xs">
-                    <Keyboard size={12} className="mr-1" />
-                    {keyboardMode === 'phonetic' ? 'Phonetic Mode' : 'Mangal Kruti Mode'}
-                  </Badge>
-                )}
-                {currentExamMode && !currentExamMode.allowBackspace && (
-                  <Badge variant="destructive" className="text-xs">
-                    <X size={12} className="mr-1" />
-                    Backspace Disabled
-                  </Badge>
-                )}
-              </div>
-            </Card>
-
-            <HindiKeyboard 
-              mode={keyboardMode || 'direct'} 
-              pressedKey={lastPressedKey}
-              className="lg:hidden"
-            />
           </div>
 
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-3">
-              <MetricCard
-                label="Net WPM"
-                value={netWPM}
-                icon={<Lightning size={20} weight="fill" />}
-                className="col-span-2"
-              />
-              <MetricCard
-                label="Gross WPM"
-                value={grossWPM}
-                icon={<ChartLine size={20} weight="bold" />}
-              />
-              <MetricCard
-                label="Accuracy"
-                value={accuracy}
-                suffix="%"
-                icon={<Target size={20} weight="fill" />}
-              />
-            </div>
-
-            <Card className="p-4">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium mb-3">
-                Session Stats
+            <Card className="p-6 bg-[#242424]/80 backdrop-blur border-border/40">
+              <div className={`text-lg leading-relaxed mb-4 ${currentFontConfig?.className || 'font-hindi'}`}>
+                {promptText || 'Loading text...'}
               </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Characters Typed</span>
-                  <span className="font-semibold">{displayInput.length}</span>
+              
+              <div className="relative">
+                <textarea
+                  ref={inputRef}
+                  value={userInput}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  disabled={isComplete}
+                  placeholder={isActive ? "Start typing..." : "Click here to start..."}
+                  className={`w-full min-h-[80px] p-4 rounded-lg border-2 border-input/40 bg-[#1a1a1a] 
+                    text-lg leading-relaxed resize-none focus:outline-none focus:ring-2 
+                    focus:ring-ring focus:border-transparent transition-all
+                    ${currentFontConfig?.className || 'font-hindi'}
+                    ${isComplete ? 'opacity-60' : ''}
+                  `}
+                />
+                <div className="absolute top-3 right-3">
+                  <Gear size={20} weight="duotone" className="text-muted-foreground cursor-pointer hover:text-foreground transition-colors" />
                 </div>
-                <Separator />
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Correct</span>
-                  <span className="font-semibold text-success">{correctChars}</span>
+              </div>
+
+              {keyboardMode !== 'direct' && displayInput && (
+                <div className={`mt-3 p-3 rounded-lg bg-muted/20 text-lg ${currentFontConfig?.className || 'font-hindi'}`}>
+                  <div className="text-xs text-muted-foreground mb-1 font-sans">
+                    Hindi D<span className="text-destructive">:</span>yion <span className="text-muted-foreground">(de typgres)</span>
+                  </div>
                 </div>
-                <Separator />
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Errors</span>
-                  <span className="font-semibold text-destructive">{errors}</span>
+              )}
+            </Card>
+
+            <Card className="p-4 bg-[#242424]/80 backdrop-blur border-border/40">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold">Remington</span>
                 </div>
-                <Separator />
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">CPM</span>
-                  <span className="font-semibold">{cpm}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Inscript</span>
+                  <Switch checked={keyboardMode === 'phonetic'} onCheckedChange={(checked) => setKeyboardMode(checked ? 'phonetic' : 'direct')} />
+                </div>
+              </div>
+              <HindiKeyboard 
+                mode={keyboardMode || 'direct'} 
+                pressedKey={lastPressedKey}
+              />
+              <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
+                <span>1/23</span>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Keyboard size={16} />
+                  </Button>
+                  <div className="flex-1 h-8 bg-[#1a1a1a] rounded"></div>
+                  <span>,</span>
+                  <span>.</span>
+                  <span className="px-3 py-1 bg-[#1a1a1a] rounded">sctuh</span>
                 </div>
               </div>
             </Card>
+          </div>
 
-            <AICoach
-              tip={aiTip}
-              weakKeys={weakKeys}
+          <div className="space-y-6">
+            <RealTimeMetrics
+              grossWpm={grossWPM}
+              netWpm={netWPM}
               accuracy={accuracy}
-              wpm={netWPM}
-            />
-
-            {weakKeys.length > 0 && (
-              <Card className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Fire size={20} weight="fill" className="text-destructive" />
-                  <h3 className="text-sm font-semibold uppercase tracking-wide">
-                    Weak Keys
-                  </h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {weakKeys.map((key, idx) => (
-                    <Badge key={idx} variant="outline" className="text-lg px-3 py-1">
-                      {key}
-                    </Badge>
-                  ))}
-                </div>
-              </Card>
-            )}
-
-            <ProgressChart sessions={sessions || []} />
-
-            <HindiKeyboard 
-              mode={keyboardMode || 'direct'} 
-              pressedKey={lastPressedKey}
-              className="hidden lg:block"
+              errors={errors}
+              correctChars={correctChars}
+              incorrectChars={incorrectChars}
+              sessions={sessions || []}
+              weakKeys={weakKeys}
             />
           </div>
         </div>

@@ -12,24 +12,24 @@
 }
 
 :root {
-  --background: oklch(0.97 0.01 80);
-  --foreground: oklch(0.25 0.05 240);
-  --card: oklch(0.99 0 0);
-  --card-foreground: oklch(0.25 0.05 240);
-  --popover: oklch(0.98 0 0);
-  --popover-foreground: oklch(0.25 0.05 240);
+  --background: oklch(0.15 0.01 240);
+  --foreground: oklch(0.95 0.01 80);
+  --card: oklch(0.18 0.01 240);
+  --card-foreground: oklch(0.95 0.01 80);
+  --popover: oklch(0.18 0.01 240);
+  --popover-foreground: oklch(0.95 0.01 80);
   --primary: oklch(0.40 0.12 240);
   --primary-foreground: oklch(0.98 0 0);
   --secondary: oklch(0.55 0.12 180);
   --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.88 0 0);
-  --muted-foreground: oklch(0.50 0 0);
+  --muted: oklch(0.30 0 0);
+  --muted-foreground: oklch(0.60 0 0);
   --accent: oklch(0.70 0.18 60);
   --accent-foreground: oklch(0.25 0.05 240);
   --destructive: oklch(0.55 0.20 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.88 0.005 240);
-  --input: oklch(0.88 0.005 240);
+  --border: oklch(0.30 0.005 240);
+  --input: oklch(0.30 0.005 240);
   --ring: oklch(0.70 0.18 60);
   --success: oklch(0.60 0.15 145);
   --success-foreground: oklch(0.98 0 0);

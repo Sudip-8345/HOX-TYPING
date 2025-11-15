@@ -159,12 +159,17 @@ export function PracticePage() {
             <TimerDisplay timeElapsed={timeElapsed} isActive={isActive} />
             
             <RealTimeMetrics 
-              wpm={wpm}
+              grossWpm={wpm}
+              netWpm={wpm}
               accuracy={accuracy}
               errors={errors}
+              correctChars={strokesDrawn - errors}
+              incorrectChars={new Map()}
+              sessions={[]}
+              weakKeys={[]}
             />
 
-            <AIFeedbackPanel feedback={aiFeedback} />
+            <AIFeedbackPanel tips={aiFeedback} wpm={wpm} accuracy={accuracy} />
           </div>
         </div>
       </main>
