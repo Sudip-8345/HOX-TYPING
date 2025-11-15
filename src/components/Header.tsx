@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { Link } from 'react-router-dom'
 import { 
   Keyboard, 
   Translate, 
@@ -7,7 +8,8 @@ import {
   Certificate, 
   SpeakerHigh, 
   SpeakerSlash,
-  User
+  User,
+  House
 } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import {
@@ -53,7 +55,9 @@ export const Header = memo(({
       <div className="container mx-auto px-4 md:px-6 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Keyboard size={32} weight="duotone" className="text-primary" />
+            <Link to="/">
+              <Keyboard size={32} weight="duotone" className="text-primary cursor-pointer hover:scale-110 transition-transform" />
+            </Link>
             <div>
               <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
                 TypistPro India
@@ -63,6 +67,20 @@ export const Header = memo(({
           </div>
 
           <div className="flex flex-wrap items-center gap-2 md:gap-3">
+            <Link to="/">
+              <Button variant="ghost" size="sm" className="gap-1 h-9">
+                <House size={16} weight="bold" />
+                <span className="hidden md:inline">Home</span>
+              </Button>
+            </Link>
+            
+            <Link to="/exam-prep">
+              <Button variant="ghost" size="sm" className="gap-1 h-9">
+                <Certificate size={16} weight="fill" />
+                <span className="hidden md:inline">Exam Hub</span>
+              </Button>
+            </Link>
+
             <Select value={language} onValueChange={onLanguageChange}>
               <SelectTrigger className="w-[120px] md:w-[140px] h-9">
                 <Translate size={16} weight="bold" className="mr-1" />

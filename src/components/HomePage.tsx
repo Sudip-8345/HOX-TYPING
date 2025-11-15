@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { TransliterationDemo } from '@/components/TransliterationDemo'
 import { 
   Keyboard, 
@@ -70,10 +71,16 @@ export function HomePage() {
                 Start Free Practice
               </Button>
             </Link>
-            <Link to="/analytics">
+            <Link to="/exam-prep">
               <Button size="lg" variant="secondary" className="gap-2 text-lg px-8 py-6">
+                <Certificate weight="bold" />
+                Exam Prep Hub
+              </Button>
+            </Link>
+            <Link to="/analytics">
+              <Button size="lg" variant="outline" className="gap-2 text-lg px-8 py-6">
                 <ChartLine weight="bold" />
-                View Analytics
+                Analytics
               </Button>
             </Link>
             <Link to="/leaderboard">
@@ -181,6 +188,28 @@ export function HomePage() {
         <section className="mb-16">
           <h3 className="text-3xl font-bold text-center mb-10">Quick Access</h3>
           <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            <Link to="/exam-prep" className="md:col-span-2">
+              <Card className="p-8 hover:shadow-lg transition-all hover:scale-[1.02] cursor-pointer border-2 border-accent/50 hover:border-accent bg-gradient-to-br from-accent/5 to-transparent">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-14 h-14 rounded-lg bg-accent flex items-center justify-center">
+                    <Certificate size={32} weight="fill" className="text-accent-foreground" />
+                  </div>
+                  <div>
+                    <h4 className="text-2xl font-bold">Exam & Prep Hub</h4>
+                    <p className="text-sm text-muted-foreground">परीक्षा तैयारी केंद्र - SSC, RRB & More</p>
+                  </div>
+                  <Badge className="ml-auto">New</Badge>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  Complete exam preparation hub with AI-driven personalization, full SSC/RRB mock tests, interactive analytics with WPM trends and error heatmaps, adaptive daily plans with 1000+ past papers, and 95% accurate LSTM-based performance prediction. Your one-stop solution for exam success!
+                </p>
+                <div className="flex items-center gap-2 text-accent font-semibold">
+                  Start Exam Preparation
+                  <ArrowRight weight="bold" />
+                </div>
+              </Card>
+            </Link>
+
             <Link to="/practice">
               <Card className="p-8 hover:shadow-lg transition-all hover:scale-[1.02] cursor-pointer border-2 border-transparent hover:border-primary">
                 <div className="flex items-center gap-4 mb-4">
