@@ -68,6 +68,13 @@ TypistPro India - An online Hindi and English typing practice platform with real
 - **Progression**: User completes session → score submitted → rank calculated → displayed on leaderboard → user sees improvement
 - **Success criteria**: Real-time ranking, fair scoring, no duplicate entries, mobile-optimized view
 
+### Comprehensive Analytics Dashboard
+- **Functionality**: Advanced analytics page with progress trends over time (multi-line charts showing WPM, accuracy, CPM), session breakdown by time of day, performance heatmaps, accuracy progress tracking, language/exam type distribution pie charts, weak areas identification with heatmap grids, and AI-powered recommendations
+- **Purpose**: Provide deep insights into typing performance patterns, identify strengths/weaknesses, track long-term improvement, and enable data-driven practice decisions
+- **Trigger**: Analytics button in header, accessible from homepage and practice pages
+- **Progression**: User clicks Analytics → comprehensive dashboard loads → user explores different metrics and time ranges → identifies weak areas → clicks focused practice recommendations → returns to targeted practice
+- **Success criteria**: Charts render smoothly with real data, time range filters work correctly, responsive design works on all devices, AI recommendations are actionable and personalized
+
 ### Session Results & Certificates
 - **Functionality**: Detailed result modal with confetti animation (50+ WPM or 97%+ accuracy), WPM chart per minute, accuracy timeline, weak keys list, global rank, downloadable PDF certificate, shareable social card
 - **Purpose**: Celebration of achievement and shareable proof of skill

@@ -4,6 +4,7 @@ import { HindiTypingPractice } from '@/components/HindiTypingPractice'
 import { EnglishTypingPractice } from '@/components/EnglishTypingPractice'
 import { PracticePage } from '@/components/PracticePage'
 import { LeaderboardPage } from '@/components/LeaderboardPage'
+import { AnalyticsPage } from '@/components/AnalyticsPage'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/english-practice" element={<EnglishTypingPractice />} />
         <Route path="/stenography" element={<PracticePage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
       </Routes>
     </BrowserRouter>
   )

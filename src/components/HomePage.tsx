@@ -33,12 +33,20 @@ export function HomePage() {
                 <p className="text-xs text-muted-foreground font-hindi">हिंदी टाइपिंग प्रैक्टिस</p>
               </div>
             </div>
-            <Link to="/practice">
-              <Button size="lg" className="gap-2">
-                Start Practice
-                <ArrowRight weight="bold" />
-              </Button>
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link to="/analytics">
+                <Button variant="outline" className="gap-2">
+                  <ChartLine weight="bold" />
+                  Analytics
+                </Button>
+              </Link>
+              <Link to="/practice">
+                <Button size="lg" className="gap-2">
+                  Start Practice
+                  <ArrowRight weight="bold" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -62,10 +70,16 @@ export function HomePage() {
                 Start Free Practice
               </Button>
             </Link>
+            <Link to="/analytics">
+              <Button size="lg" variant="secondary" className="gap-2 text-lg px-8 py-6">
+                <ChartLine weight="bold" />
+                View Analytics
+              </Button>
+            </Link>
             <Link to="/leaderboard">
               <Button size="lg" variant="outline" className="gap-2 text-lg px-8 py-6">
                 <Trophy weight="fill" />
-                View Leaderboard
+                Leaderboard
               </Button>
             </Link>
           </div>
