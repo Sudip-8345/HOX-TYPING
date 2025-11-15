@@ -1,6 +1,6 @@
 # Planning Guide
 
-StenoMaster - An online Pitman shorthand practice and testing platform with real-time AI feedback, audio dictation support, and comprehensive stenography learning tools for mastering professional shorthand writing.
+StenoMaster - An online Pitman shorthand practice and testing platform with real-time AI feedback, audio dictation support, and comprehensive stenography learning tools for mastering professional shorthand writing. Features a welcoming homepage, full practice mode, and leaderboard system.
 
 **Experience Qualities**: 
 1. **Professional** - Clean, focused interface similar to professional stenography tools with clear visual feedback for writing practice.
@@ -8,9 +8,16 @@ StenoMaster - An online Pitman shorthand practice and testing platform with real
 3. **Educational** - Comprehensive character reference guides (vowels, consonants, briefs) with interactive examples and AI-powered feedback.
 
 **Complexity Level**: Complex Application (advanced functionality with drawing, audio, and AI features)
-  - Stenography practice platform with canvas drawing, audio dictation playback, symbol reference keyboard, real-time performance metrics, and AI-powered stroke analysis.
+  - Stenography practice platform with canvas drawing, audio dictation playback, symbol reference keyboard, real-time performance metrics, AI-powered stroke analysis, and multi-page navigation.
 
 ## Essential Features
+
+### Homepage & Navigation
+- **Functionality**: Welcoming homepage showcasing platform features with clear navigation to practice and leaderboard sections
+- **Purpose**: Provide users with overview and easy access to all features
+- **Trigger**: Landing on the site or clicking home/back buttons
+- **Progression**: User arrives → sees feature highlights and call-to-action → clicks "Start Practice" or "View Leaderboard" → navigates to respective section
+- **Success criteria**: Fast page load, clear CTAs, responsive navigation on all devices
 
 ### Multi-Language & Font Support
 - **Functionality**: Support for 8+ Indian languages (English, Hindi, Marathi, Punjabi, Bengali, Gujarati, Tamil, Telugu) with multiple fonts per language (KrutiDev 010/020/030, DevLys, Mangal, Apache, Remington GAIL/CBI for Hindi; JetBrains Mono, Courier for English)

@@ -1,146 +1,17 @@
-import { useState, useEffect, useRef } from 'react'
-import { useKV } from '@github/spark/hooks'
-import { Button } from '@/components/ui/button'
-import { Bell, User } from '@phosphor-icons/react'
-import { DrawingCanvas } from '@/components/DrawingCanvas'
-import { AudioPlayer } from '@/components/AudioPlayer'
-import { StenoKeyboard } from '@/components/StenoKeyboard'
-import { TimerDisplay } from '@/components/TimerDisplay'
-import { RealTimeMetrics } from '@/components/RealTimeMetrics'
-import { AIFeedbackPanel } from '@/components/AIFeedbackPanel'
-import { 
-  SessionData, 
-  calculateWPM, 
-  calculateAccuracy,
-  generateAITip,
-  StenoMetrics
-} from '@/lib/stenoUtils'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HomePage } from '@/components/HomePage'
+import { PracticePage } from '@/components/PracticePage'
+import { LeaderboardPage } from '@/components/LeaderboardPage'
 
 function App() {
-  const [isActive, setIsActive] = useState(false)
-  const [timeElapsed, setTimeElapsed] = useState(0)
-  const [strokesDrawn, setStrokesDrawn] = useState(0)
-  const [errors, setErrors] = useState(0)
-  const [wpm, setWpm] = useState(0)
-  const [accuracy, setAccuracy] = useState(100)
-  const [aiFeedback, setAiFeedback] = useState<string[]>([])
-  
-  const [sessions, setSessions] = useKV<SessionData[]>('steno-sessions', [])
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
-
-  useEffect(() => {
-    if (isActive) {
-      intervalRef.current = setInterval(() => {
-        setTimeElapsed(prev => prev + 1)
-      }, 1000)
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [isActive])
-
-  useEffect(() => {
-    if (timeElapsed > 0 && strokesDrawn > 0) {
-      const minutes = timeElapsed / 60
-      const wordsTyped = Math.floor(strokesDrawn / 5)
-      const calculatedWpm = calculateWPM(wordsTyped, minutes)
-      setWpm(calculatedWpm)
-      
-      const totalStrokes = strokesDrawn + errors
-      const calculatedAccuracy = calculateAccuracy(strokesDrawn, totalStrokes)
-      setAccuracy(calculatedAccuracy)
-
-      const metrics: StenoMetrics = {
-        wpm: calculatedWpm,
-        accuracy: calculatedAccuracy,
-        errors,
-        timeElapsed,
-        strokesDrawn
-      }
-
-      const tip = generateAITip(metrics)
-      if (tip && !aiFeedback.includes(tip)) {
-        setAiFeedback(prev => [...prev.slice(-2), tip])
-      }
-    }
-  }, [timeElapsed, strokesDrawn, errors])
-
-  const handleActivate = () => {
-    if (!isActive) {
-      setIsActive(true)
-    }
-  }
-
-  const handleStrokeComplete = () => {
-    setStrokesDrawn(prev => prev + 1)
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                Online Stenography Practice & Testing
-              </h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Master Pitman Shorthand with Real-Time AI Feedback
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative rounded-full"
-              >
-                <Bell size={22} weight="fill" />
-                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center text-xs font-bold">
-                  4
-                </span>
-              </Button>
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                <User size={24} weight="fill" className="text-primary-foreground" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-6 py-6">
-        <div className="grid lg:grid-cols-[1fr_340px] gap-6">
-          <div className="space-y-6">
-            <AudioPlayer isActive={isActive} onPlay={handleActivate} />
-            
-            <DrawingCanvas 
-              onStrokeComplete={handleStrokeComplete}
-              isActive={isActive}
-              onActivate={handleActivate}
-            />
-
-            <StenoKeyboard />
-          </div>
-
-          <div className="space-y-6">
-            <TimerDisplay timeElapsed={timeElapsed} isActive={isActive} />
-            
-            <RealTimeMetrics 
-              wpm={wpm}
-              accuracy={accuracy}
-              errors={errors}
-            />
-
-            <AIFeedbackPanel feedback={aiFeedback} />
-          </div>
-        </div>
-      </main>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/practice" element={<PracticePage />} />
+        <Route path="/leaderboard" element={<LeaderboardPage />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
