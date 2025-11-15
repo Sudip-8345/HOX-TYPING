@@ -34,6 +34,8 @@ import { TypingDisplay } from '@/components/TypingDisplay'
 import { MetricCard } from '@/components/MetricCard'
 import { AICoach } from '@/components/AICoach'
 import { ProgressChart } from '@/components/ProgressChart'
+import { HindiKeyboard } from '@/components/HindiKeyboard'
+import { TypingGuide } from '@/components/TypingGuide'
 import { toast } from 'sonner'
 import { 
   SessionData,
@@ -71,6 +73,7 @@ export function HindiTypingPractice() {
   const [errors, setErrors] = useState(0)
   const [backspaceCount, setBackspaceCount] = useState(0)
   const [incorrectChars, setIncorrectChars] = useState<Map<number, string>>(new Map())
+  const [lastPressedKey, setLastPressedKey] = useState<string>('')
   
   const [sessions, setSessions] = useKV<SessionData[]>('typing-sessions', [])
   
@@ -265,6 +268,10 @@ export function HindiTypingPractice() {
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    setLastPressedKey(e.key)
+    
+    setTimeout(() => setLastPressedKey(''), 200)
+    
     if (e.ctrlKey || e.metaKey) {
       if (e.key === 'v') {
         e.preventDefault()
@@ -311,6 +318,8 @@ export function HindiTypingPractice() {
           </Link>
 
           <div className="flex items-center gap-2">
+            <TypingGuide />
+            
             <Button
               onClick={handleRestart}
               variant="outline"
@@ -491,6 +500,12 @@ export function HindiTypingPractice() {
                 )}
               </div>
             </Card>
+
+            <HindiKeyboard 
+              mode={keyboardMode || 'direct'} 
+              pressedKey={lastPressedKey}
+              className="lg:hidden"
+            />
           </div>
 
           <div className="space-y-6">
@@ -567,6 +582,12 @@ export function HindiTypingPractice() {
             )}
 
             <ProgressChart sessions={sessions || []} />
+
+            <HindiKeyboard 
+              mode={keyboardMode || 'direct'} 
+              pressedKey={lastPressedKey}
+              className="hidden lg:block"
+            />
           </div>
         </div>
       </main>

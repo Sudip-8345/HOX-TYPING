@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { TransliterationDemo } from '@/components/TransliterationDemo'
 import { 
   Keyboard, 
   Lightning, 
@@ -153,6 +154,14 @@ export function HomePage() {
               </div>
             </div>
           </div>
+        </section>
+
+        <section className="mb-16 max-w-3xl mx-auto">
+          <h3 className="text-3xl font-bold text-center mb-6">Experience Real-Time Transliteration</h3>
+          <p className="text-center text-muted-foreground mb-8">
+            Type in English and watch it magically convert to Hindi. No special keyboard needed!
+          </p>
+          <TransliterationDemo />
         </section>
 
         <section className="mb-16">
