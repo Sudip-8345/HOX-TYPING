@@ -11,12 +11,13 @@ import {
   Crown,
   Lightning,
   Target,
-  Fire
+  Fire,
+  Clock
 } from '@phosphor-icons/react'
-import { SessionData } from '@/lib/stenoUtils'
+import { SessionData } from '@/lib/typingUtils'
 
 export function LeaderboardPage() {
-  const [sessions] = useKV<SessionData[]>('steno-sessions', [])
+  const [sessions] = useKV<SessionData[]>('typing-sessions', [])
   const [filter, setFilter] = useState<'all' | 'today' | 'week'>('all')
 
   const filteredSessions = (sessions || [])
@@ -36,7 +37,10 @@ export function LeaderboardPage() {
       
       return true
     })
-    .sort((a, b) => b.wpm - a.wpm)
+    .sort((a, b) => {
+      if (b.wpm !== a.wpm) return b.wpm - a.wpm
+      return b.accuracy - a.accuracy
+    })
     .slice(0, 50)
 
   const getRankBadge = (index: number) => {
@@ -68,6 +72,12 @@ export function LeaderboardPage() {
     )
   }
 
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
@@ -84,7 +94,7 @@ export function LeaderboardPage() {
                   <Trophy size={28} weight="fill" className="text-accent" />
                   Leaderboard
                 </h1>
-                <p className="text-sm text-muted-foreground">Top performing sessions</p>
+                <p className="text-sm text-muted-foreground">लीडरबोर्ड - Top performing sessions</p>
               </div>
             </div>
             <Link to="/practice">
@@ -146,7 +156,7 @@ export function LeaderboardPage() {
             <div className="space-y-3">
               {filteredSessions.map((session, index) => (
                 <Card
-                  key={session.timestamp}
+                  key={session.id}
                   className={`p-4 transition-all hover:shadow-md ${
                     index < 3 ? 'border-2 border-accent/20' : ''
                   }`}
@@ -155,49 +165,70 @@ export function LeaderboardPage() {
                     {getRankBadge(index)}
                     
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold text-foreground truncate">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <h4 className="font-semibold text-foreground">
                           Session #{(sessions || []).length - (sessions || []).indexOf(session)}
                         </h4>
-                        {session.wpm >= 60 && (
+                        {session.language && (
+                          <Badge variant="secondary" className="text-xs">
+                            {session.language === 'hindi' ? 'हिंदी' : 'English'}
+                          </Badge>
+                        )}
+                        {session.font && (
+                          <Badge variant="outline" className="text-xs">
+                            {session.font}
+                          </Badge>
+                        )}
+                        {session.examMode && session.examMode !== 'practice' && (
+                          <Badge variant="destructive" className="text-xs">
+                            {session.examMode.toUpperCase()}
+                          </Badge>
+                        )}
+                        {session.wpm >= 50 && (
                           <Badge variant="secondary" className="gap-1">
                             <Fire size={14} weight="fill" />
-                            Hot Streak
+                            Hot
                           </Badge>
                         )}
                         {session.accuracy >= 98 && (
                           <Badge variant="outline" className="gap-1">
                             <Target size={14} weight="fill" />
-                            High Accuracy
+                            Perfect
                           </Badge>
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(session.timestamp).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                      <div className="text-xs text-muted-foreground flex items-center gap-3 flex-wrap">
+                        <span>
+                          {new Date(session.timestamp).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock size={12} />
+                          {formatDuration(session.duration)}
+                        </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-6 text-right">
+                    <div className="flex items-center gap-4 md:gap-6 text-right">
                       <div>
-                        <div className="text-2xl font-bold text-primary">
+                        <div className="text-xl md:text-2xl font-bold text-primary">
                           {session.wpm}
                         </div>
-                        <div className="text-xs text-muted-foreground">WPM</div>
+                        <div className="text-xs text-muted-foreground">Net WPM</div>
                       </div>
                       <div>
-                        <div className="text-2xl font-bold text-success">
+                        <div className="text-xl md:text-2xl font-bold text-success">
                           {session.accuracy.toFixed(1)}%
                         </div>
                         <div className="text-xs text-muted-foreground">Accuracy</div>
                       </div>
-                      <div>
-                        <div className="text-2xl font-bold text-muted-foreground">
+                      <div className="hidden sm:block">
+                        <div className="text-xl md:text-2xl font-bold text-destructive">
                           {session.errors}
                         </div>
                         <div className="text-xs text-muted-foreground">Errors</div>

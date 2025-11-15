@@ -82,3 +82,7 @@
 .font-sans {
   font-family: 'Inter', system-ui, sans-serif;
 }
+
+.font-hindi {
+  font-family: 'Noto Sans Devanagari', system-ui, sans-serif;
+}

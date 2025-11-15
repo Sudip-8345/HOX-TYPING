@@ -1,14 +1,14 @@
 # Planning Guide
 
-StenoMaster - An online Pitman shorthand practice and testing platform with real-time AI feedback, audio dictation support, and comprehensive stenography learning tools for mastering professional shorthand writing. Features a welcoming homepage, full practice mode, and leaderboard system.
+TypistPro India - An online Hindi and English typing practice platform with real-time AI feedback, multiple font support (Mangal, KrutiDev, Remington, Inscript), exam mode simulations (SSC, RRB, High Court), and comprehensive performance tracking. Features a welcoming homepage, full typing practice mode with live metrics, and leaderboard system. Perfect for government exam preparation.
 
 **Experience Qualities**: 
-1. **Professional** - Clean, focused interface similar to professional stenography tools with clear visual feedback for writing practice.
-2. **Intuitive** - Drawing canvas with natural pen/eraser tools, audio playback controls, and real-time metrics make learning shorthand accessible.
-3. **Educational** - Comprehensive character reference guides (vowels, consonants, briefs) with interactive examples and AI-powered feedback.
+1. **Professional** - Clean, exam-focused interface similar to professional government typing test environments with clear visual feedback.
+2. **Intuitive** - Simple typing interface with real-time character highlighting, audio guides, and instant metrics that make practice accessible.
+3. **Educational** - Comprehensive AI-powered feedback with weak key detection, personalized tips, and progress tracking to accelerate learning.
 
-**Complexity Level**: Complex Application (advanced functionality with drawing, audio, and AI features)
-  - Stenography practice platform with canvas drawing, audio dictation playback, symbol reference keyboard, real-time performance metrics, AI-powered stroke analysis, and multi-page navigation.
+**Complexity Level**: Complex Application (advanced functionality with multiple languages, fonts, AI, and exam modes)
+  - Hindi/English typing practice platform with multi-language support, AI-powered coaching, real-time metrics, exam mode simulations, weak key detection, progress charts, and comprehensive leaderboard system.
 
 ## Essential Features
 
