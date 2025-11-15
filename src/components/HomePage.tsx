@@ -157,7 +157,7 @@ export function HomePage() {
 
         <section className="mb-16">
           <h3 className="text-3xl font-bold text-center mb-10">Quick Access</h3>
-          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             <Link to="/practice">
               <Card className="p-8 hover:shadow-lg transition-all hover:scale-[1.02] cursor-pointer border-2 border-transparent hover:border-primary">
                 <div className="flex items-center gap-4 mb-4">
@@ -165,15 +165,57 @@ export function HomePage() {
                     <Lightning size={32} weight="fill" className="text-primary-foreground" />
                   </div>
                   <div>
-                    <h4 className="text-2xl font-bold">Practice Mode</h4>
-                    <p className="text-sm text-muted-foreground">अभ्यास शुरू करें</p>
+                    <h4 className="text-2xl font-bold">Hindi Practice</h4>
+                    <p className="text-sm text-muted-foreground">हिंदी टाइपिंग अभ्यास</p>
                   </div>
                 </div>
                 <p className="text-muted-foreground mb-4">
-                  Start Hindi/English typing practice with real-time AI feedback, multiple fonts, exam modes, and comprehensive performance tracking. Perfect for SSC, RRB, and government exams.
+                  Start Hindi typing practice with real-time AI feedback, multiple fonts (Mangal, KrutiDev, Remington), exam modes, and comprehensive performance tracking.
                 </p>
                 <div className="flex items-center gap-2 text-primary font-semibold">
-                  Start Practice
+                  Start Hindi Practice
+                  <ArrowRight weight="bold" />
+                </div>
+              </Card>
+            </Link>
+
+            <Link to="/english-practice">
+              <Card className="p-8 hover:shadow-lg transition-all hover:scale-[1.02] cursor-pointer border-2 border-transparent hover:border-secondary">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-14 h-14 rounded-lg bg-secondary flex items-center justify-center">
+                    <TextAa size={32} weight="fill" className="text-secondary-foreground" />
+                  </div>
+                  <div>
+                    <h4 className="text-2xl font-bold">English Practice</h4>
+                    <p className="text-sm text-muted-foreground">English Typing Practice</p>
+                  </div>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  Practice English typing with real-time feedback, exam mode simulation, and detailed performance metrics. Ideal for improving speed and accuracy.
+                </p>
+                <div className="flex items-center gap-2 text-secondary font-semibold">
+                  Start English Practice
+                  <ArrowRight weight="bold" />
+                </div>
+              </Card>
+            </Link>
+
+            <Link to="/stenography">
+              <Card className="p-8 hover:shadow-lg transition-all hover:scale-[1.02] cursor-pointer border-2 border-transparent hover:border-warning">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-14 h-14 rounded-lg bg-warning/10 flex items-center justify-center">
+                    <Brain size={32} weight="fill" className="text-warning" />
+                  </div>
+                  <div>
+                    <h4 className="text-2xl font-bold">Stenography</h4>
+                    <p className="text-sm text-muted-foreground">Shorthand Practice</p>
+                  </div>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  Master Pitman Shorthand with drawing canvas, real-time AI feedback, and audio dictation support. Perfect for stenographer exam preparation.
+                </p>
+                <div className="flex items-center gap-2 text-warning font-semibold">
+                  Start Stenography
                   <ArrowRight weight="bold" />
                 </div>
               </Card>
