@@ -19,8 +19,16 @@ import {
   Brain,
   Fire,
   X,
-  Backspace
+  Backspace,
+  Keyboard
 } from '@phosphor-icons/react'
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Header } from '@/components/Header'
 import { TypingDisplay } from '@/components/TypingDisplay'
 import { MetricCard } from '@/components/MetricCard'
@@ -39,6 +47,7 @@ import {
   generateAITip,
   detectWeakKeys
 } from '@/lib/typingUtils'
+import { transliterate, TransliterationMode } from '@/lib/transliteration'
 
 export function HindiTypingPractice() {
   const [language, setLanguage] = useState('hindi')
@@ -46,9 +55,11 @@ export function HindiTypingPractice() {
   const [duration, setDuration] = useState(600)
   const [examMode, setExamMode] = useState('ssc')
   const [soundEnabled, setSoundEnabled] = useState(true)
+  const [keyboardMode, setKeyboardMode] = useKV<TransliterationMode>('keyboard-mode', 'direct')
 
   const [promptText, setPromptText] = useState('')
   const [userInput, setUserInput] = useState('')
+  const [displayInput, setDisplayInput] = useState('')
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isActive, setIsActive] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
@@ -71,10 +82,10 @@ export function HindiTypingPractice() {
     .find(lf => lf.language === language)
     ?.fonts.find(f => f.id === font)
 
-  const grossWPM = calculateWPM(userInput.length, timeElapsed)
+  const grossWPM = calculateWPM(displayInput.length, timeElapsed)
   const netWPM = calculateNetWPM(grossWPM, errors, timeElapsed)
-  const accuracy = calculateAccuracy(correctChars, userInput.length)
-  const cpm = calculateCPM(userInput.length, timeElapsed)
+  const accuracy = calculateAccuracy(correctChars, displayInput.length)
+  const cpm = calculateCPM(displayInput.length, timeElapsed)
   const weakKeys = detectWeakKeys(incorrectChars, promptText)
   const aiTip = generateAITip({ 
     wpm: netWPM, 
@@ -83,12 +94,12 @@ export function HindiTypingPractice() {
     accuracy, 
     errors, 
     timeElapsed,
-    charactersTyped: userInput.length,
+    charactersTyped: displayInput.length,
     correctChars,
     cpm
   }, weakKeys)
 
-  const progress = promptText ? (userInput.length / promptText.length) * 100 : 0
+  const progress = promptText ? (displayInput.length / promptText.length) * 100 : 0
   const timeRemaining = currentExamMode?.duration ? currentExamMode.duration - timeElapsed : duration - timeElapsed
 
   useEffect(() => {
@@ -124,15 +135,16 @@ export function HindiTypingPractice() {
   }, [isActive, isPaused, duration, currentExamMode])
 
   useEffect(() => {
-    if (userInput.length >= promptText.length && promptText.length > 0) {
+    if (displayInput.length >= promptText.length && promptText.length > 0) {
       handleComplete()
     }
-  }, [userInput, promptText])
+  }, [displayInput, promptText])
 
   const loadNewText = useCallback(() => {
     const newText = getRandomText(language)
     setPromptText(newText)
     setUserInput('')
+    setDisplayInput('')
     setCurrentIndex(0)
     setIsActive(false)
     setIsPaused(false)
@@ -177,7 +189,7 @@ export function HindiTypingPractice() {
       clearInterval(intervalRef.current)
     }
 
-    if (timeElapsed > 5 && userInput.length > 10) {
+    if (timeElapsed > 5 && displayInput.length > 10) {
       const newSession: SessionData = {
         id: `session-${Date.now()}`,
         timestamp: Date.now(),
@@ -222,26 +234,34 @@ export function HindiTypingPractice() {
         return
       }
       setBackspaceCount(prev => prev + 1)
+      
+      setUserInput(newValue)
+      const transliterated = keyboardMode !== 'direct' ? transliterate(newValue, keyboardMode) : newValue
+      setDisplayInput(transliterated)
+      setCurrentIndex(transliterated.length)
+      return
     }
 
-    const lastChar = newValue[newValue.length - 1]
-    const expectedChar = promptText[newValue.length - 1]
+    const transliterated = keyboardMode !== 'direct' ? transliterate(newValue, keyboardMode) : newValue
+    const lastChar = transliterated[transliterated.length - 1]
+    const expectedChar = promptText[transliterated.length - 1]
 
-    if (newValue.length > userInput.length) {
+    if (transliterated.length > displayInput.length) {
       if (lastChar === expectedChar) {
         setCorrectChars(prev => prev + 1)
       } else {
         setErrors(prev => prev + 1)
         setIncorrectChars(prev => {
           const updated = new Map(prev)
-          updated.set(newValue.length - 1, lastChar)
+          updated.set(transliterated.length - 1, lastChar)
           return updated
         })
       }
     }
 
     setUserInput(newValue)
-    setCurrentIndex(newValue.length)
+    setDisplayInput(transliterated)
+    setCurrentIndex(transliterated.length)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -397,7 +417,7 @@ export function HindiTypingPractice() {
 
               <TypingDisplay
                 promptText={promptText}
-                userInput={userInput}
+                userInput={displayInput}
                 currentIndex={currentIndex}
                 isComplete={isComplete}
                 fontClass={currentFontConfig?.className || 'font-mono'}
@@ -405,9 +425,30 @@ export function HindiTypingPractice() {
             </div>
 
             <Card className="p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Target size={20} weight="duotone" className="text-accent" />
-                <h3 className="text-sm font-semibold uppercase tracking-wide">Your Input</h3>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Target size={20} weight="duotone" className="text-accent" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wide">Your Input</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Keyboard size={18} weight="duotone" className="text-muted-foreground" />
+                  <Select
+                    value={keyboardMode}
+                    onValueChange={(value) => {
+                      setKeyboardMode(value as TransliterationMode)
+                      toast.success(`Switched to ${value === 'direct' ? 'Direct Hindi' : value === 'phonetic' ? 'Phonetic (Google)' : 'Mangal Kruti'} keyboard`)
+                    }}
+                  >
+                    <SelectTrigger className="w-[180px] h-8 text-xs">
+                      <SelectValue placeholder="Select keyboard" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="direct">Direct Hindi</SelectItem>
+                      <SelectItem value="phonetic">Phonetic (Google)</SelectItem>
+                      <SelectItem value="mangal-kruti">Mangal Kruti</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <textarea
                 ref={inputRef}
@@ -423,11 +464,25 @@ export function HindiTypingPractice() {
                   ${isComplete ? 'opacity-60' : ''}
                 `}
               />
+              {keyboardMode !== 'direct' && displayInput && (
+                <div className={`mt-3 p-3 rounded-lg bg-muted/50 text-lg ${currentFontConfig?.className || 'font-mono'}`}>
+                  <div className="text-xs text-muted-foreground mb-1 font-sans uppercase tracking-wide">
+                    Hindi Output:
+                  </div>
+                  {displayInput}
+                </div>
+              )}
               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Backspace size={14} />
                   Backspace: {backspaceCount}
                 </span>
+                {keyboardMode !== 'direct' && (
+                  <Badge variant="secondary" className="text-xs">
+                    <Keyboard size={12} className="mr-1" />
+                    {keyboardMode === 'phonetic' ? 'Phonetic Mode' : 'Mangal Kruti Mode'}
+                  </Badge>
+                )}
                 {currentExamMode && !currentExamMode.allowBackspace && (
                   <Badge variant="destructive" className="text-xs">
                     <X size={12} className="mr-1" />
@@ -466,7 +521,7 @@ export function HindiTypingPractice() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Characters Typed</span>
-                  <span className="font-semibold">{userInput.length}</span>
+                  <span className="font-semibold">{displayInput.length}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between">
