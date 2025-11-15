@@ -1,155 +1,224 @@
 # Planning Guide
 
-A focused typing practice application that helps users improve their typing speed and accuracy through real-time feedback, personalized metrics, and intelligent insights.
+TypistPro India (टाइपिस्ट प्रो) - A comprehensive bilingual typing practice platform designed specifically for Indian government typing exams (SSC, RRB, High Court, etc.) with support for multiple Indian languages and fonts, real-time AI coaching, and exam-mode simulation.
 
 **Experience Qualities**: 
-1. **Effortless** - The interface fades into the background, allowing users to focus entirely on their typing practice without distraction or confusion.
-2. **Responsive** - Every keystroke provides immediate, clear feedback that motivates improvement without overwhelming the learner.
-3. **Empowering** - Users feel their progress through data-driven insights and see exactly where to improve next.
+1. **Professional** - Clean, focused interface that mimics real exam environments while providing advanced practice tools and metrics.
+2. **Intelligent** - AI-powered real-time feedback identifies weak keys, suggests improvements, and adapts practice content to user needs.
+3. **Comprehensive** - Supports multiple Indian languages, fonts (KrutiDev, DevLys, Mangal, etc.), exam modes, and provides detailed analytics with leaderboards.
 
-**Complexity Level**: Light Application (multiple features with basic state)
-  - Single-screen focused practice with real-time metrics, session history tracking, and AI-powered feedback for improvement areas.
+**Complexity Level**: Complex Application (advanced functionality with comprehensive state management)
+  - Multi-language typing platform with font support, exam simulation modes, AI coaching, heatmap visualization, progress tracking, leaderboards, and PWA capabilities.
 
 ## Essential Features
 
-### Real-Time Typing Practice
-- **Functionality**: Displays prompt text, captures user input, highlights correct/incorrect characters in real-time
-- **Purpose**: Core learning mechanism - immediate visual feedback reinforces correct typing patterns
-- **Trigger**: Auto-focus on page load, keyboard shortcut (Ctrl+R) to restart
-- **Progression**: User lands on page → sees prompt → begins typing → sees green (correct) / red (incorrect) highlighting → completes or restarts → views final metrics
-- **Success criteria**: Character-by-character comparison works flawlessly, no input lag, highlighting updates <100ms
+### Multi-Language & Font Support
+- **Functionality**: Support for 8+ Indian languages (English, Hindi, Marathi, Punjabi, Bengali, Gujarati, Tamil, Telugu) with multiple fonts per language (KrutiDev 010/020/030, DevLys, Mangal, Apache, Remington GAIL/CBI for Hindi; JetBrains Mono, Courier for English)
+- **Purpose**: Caters to diverse Indian typing exam requirements and regional language support
+- **Trigger**: Language and font dropdowns in header
+- **Progression**: User selects language → font dropdown updates with relevant fonts → user selects font → practice text and input area update accordingly
+- **Success criteria**: Proper rendering of all fonts, no character overlap, fonts load within 1 second
 
-### Live Performance Metrics
-- **Functionality**: Real-time WPM (words per minute), accuracy percentage, error count, elapsed time display
-- **Purpose**: Provides immediate performance awareness and motivates improvement through gamification
-- **Trigger**: Updates automatically on every keystroke during active session
-- **Progression**: Session starts → timer begins → metrics calculate and update live → session ends → final metrics displayed
-- **Success criteria**: Calculations are accurate, updates don't cause UI jank, metrics persist after session
+### Exam Mode Simulation
+- **Functionality**: Multiple exam modes (SSC 10min, RRB 8min, High Court, CRPF, Delhi Police) with specific rules like backspace disabled, 5% error penalty, exact timing
+- **Purpose**: Prepares users for actual government typing exams with realistic constraints
+- **Trigger**: Exam mode selector in header
+- **Progression**: User selects exam type → timer sets automatically → backspace disables → practice begins → timer ends → results calculated with exam-specific scoring
+- **Success criteria**: Timer accuracy ±1 second, backspace fully disabled in exam mode, scoring matches official exam formulas
 
-### Session History & Progress Tracking
-- **Functionality**: Stores past session data, displays line chart of WPM over time
-- **Purpose**: Shows improvement trajectory, motivates continued practice
-- **Trigger**: Automatically saves on session completion, displays in sidebar
-- **Progression**: User completes session → data saved to KV store → chart updates → user sees progress trend
-- **Success criteria**: Data persists across page refreshes, chart is readable and updates smoothly
+### Real-Time AI Smart Coach
+- **Functionality**: Analyzes typing patterns in real-time, identifies weak keys/combinations (e.g., "त्र", "ज्ञ", "श्र"), detects hand weakness (left/right), tracks backspace frequency per character
+- **Purpose**: Provides intelligent, actionable feedback to accelerate improvement
+- **Trigger**: Continuous analysis during typing, tips displayed after session or in real-time sidebar
+- **Progression**: User types → AI tracks keystroke patterns → identifies weak areas → displays tips like "आप 'श' + 'ज्ञ' कॉम्बिनेशन में अटकते हो" → next paragraph auto-focuses on weakness
+- **Success criteria**: Tips are specific and accurate, weakness detection 95%+ accurate, AI response within 2 seconds
 
-### AI-Powered Insights
-- **Functionality**: Analyzes error patterns, identifies problematic keys/character combinations
-- **Purpose**: Provides actionable feedback on specific areas needing improvement
-- **Trigger**: Generates after each completed session based on error data
-- **Progression**: Session completes → AI analyzes error patterns → tip displayed in sidebar → user focuses on weak areas in next session
-- **Success criteria**: Tips are specific and actionable, appear within 2 seconds of session end
+### Weak Key Heatmap Visualization
+- **Functionality**: Live keyboard heatmap showing color-coded weak/strong keys (red = weak, green = strong) using lightweight ML model
+- **Purpose**: Visual representation of typing strengths/weaknesses for targeted practice
+- **Trigger**: Displays in sidebar during and after typing sessions
+- **Progression**: User types → keystroke data collected → heatmap updates live → color intensity reflects error frequency
+- **Success criteria**: Heatmap updates smoothly without lag, colors accurately reflect performance, mobile-friendly layout
 
-### Language Support
-- **Functionality**: Switch between English and Hindi (Devanagari) practice texts
-- **Purpose**: Supports multilingual typing practice for diverse users
-- **Trigger**: Language selector in header or footer
-- **Progression**: User clicks language toggle → new prompt loads → practice continues in selected language
-- **Success criteria**: Proper font rendering for Devanagari, appropriate difficulty level for each language
+### Comprehensive Metrics Dashboard
+- **Functionality**: Live tracking of Gross WPM, Net WPM, Accuracy %, Errors, Correct/Wrong Keystrokes, CPM, Timer with progress bars (linear + circular), mini speed trend graph
+- **Purpose**: Complete performance visibility for data-driven improvement
+- **Trigger**: Updates on every keystroke during active session
+- **Progression**: Session starts → all metrics initialize → update in real-time → final values displayed on completion
+- **Success criteria**: All calculations accurate, updates <50ms, no UI jank, metrics persist
+
+### 1500+ Practice Paragraphs Library
+- **Functionality**: Pre-loaded paragraphs including past 10 years real SSC/RRB questions, daily new content, difficulty levels, user upload via text/OCR
+- **Purpose**: Diverse practice content that matches actual exam patterns
+- **Trigger**: Random paragraph on load/restart, user can upload custom text or select from library
+- **Progression**: User starts session → random paragraph loads → completes → new random paragraph on restart OR user uploads image → OCR extracts text → becomes practice paragraph
+- **Success criteria**: Paragraph variety, accurate OCR (90%+), user uploads work smoothly
+
+### Global & Local Leaderboards
+- **Functionality**: Daily/Weekly/All-Time rankings, filterable by font/exam type/duration, Top 100 display + user rank, verified badges for 80+ WPM
+- **Purpose**: Gamification and motivation through competition
+- **Trigger**: View leaderboard button, auto-updates after session completion
+- **Progression**: User completes session → score submitted → rank calculated → displayed on leaderboard → user sees improvement
+- **Success criteria**: Real-time ranking, fair scoring, no duplicate entries, mobile-optimized view
+
+### Session Results & Certificates
+- **Functionality**: Detailed result modal with confetti animation (50+ WPM or 97%+ accuracy), WPM chart per minute, accuracy timeline, weak keys list, global rank, downloadable PDF certificate, shareable social card
+- **Purpose**: Celebration of achievement and shareable proof of skill
+- **Trigger**: Session completion (time up or manual submit)
+- **Progression**: Session ends → result modal opens with animation → user views detailed stats → downloads certificate OR shares on WhatsApp/Instagram
+- **Success criteria**: Animations smooth, PDF generates correctly with user data, social cards optimized for sharing
 
 ## Edge Case Handling
 
-- **Empty Input**: If user hasn't typed anything, metrics show 0 WPM, 0% accuracy gracefully
-- **Rapid Restarts**: Debounce restart button to prevent accidental double-clicks from breaking state
-- **Incomplete Sessions**: Allow users to restart mid-session without penalty, don't save incomplete data
-- **Long Sessions**: Cap practice sessions at 5 minutes to maintain data quality and user focus
-- **No History**: Show empty state with encouraging message when user has no past sessions yet
-- **Paste Prevention**: Disable paste to ensure genuine typing practice (show toast notification if attempted)
+- **No Internet Connection**: App works 100% offline after first load (PWA), syncs progress when reconnected
+- **Empty Input**: Metrics show 0 gracefully with encouraging placeholder text
+- **Mid-Session Restart**: Confirmation dialog prevents accidental data loss, doesn't save incomplete sessions
+- **Paste Attempts**: Fully blocked with toast notification explaining why (maintains practice integrity)
+- **Timer Accuracy**: Background tab handling - pause timer when tab loses focus to prevent cheating
+- **Font Loading Failures**: Fallback fonts cascade properly, error message if critical font unavailable
+- **Long Text Overflow**: Auto-scrolling follows cursor, line-by-line scroll after 3 lines
+- **Mobile Keyboard**: Virtual keyboard option for Hindi (Inscript/Remington), handles on-screen keyboard height
+- **Rapid Key Presses**: Debouncing prevents input buffer overflow and ensures accurate tracking
+- **User Upload Errors**: Clear error messages for invalid files, OCR failure fallbacks, file size limits
+- **Leaderboard Spam**: Rate limiting on submission, validation of scores to prevent cheating
+- **Session Interruption**: Auto-save progress, resume capability, clear state management
 
 ## Design Direction
 
-The design should feel focused, calm, and professional - like a precision tool rather than a playful game. A minimal interface emphasizes the typing area, with metrics presented as clean data visualizations that inform without distracting. The aesthetic draws from developer tools and productivity apps: purposeful, unadorned, and highly functional.
+The design should feel professional, exam-focused, and distinctly Indian - combining the precision of government typing test environments with modern web app aesthetics. A clean, data-rich interface emphasizes the typing area while providing comprehensive metrics without overwhelming. The aesthetic balances traditional exam preparation tools with contemporary design patterns: focused, information-dense yet organized, and culturally appropriate with bilingual support throughout.
 
 ## Color Selection
 
-Analogous color scheme centered around blue-violet, conveying focus, professionalism, and trust while maintaining visual harmony.
+Triadic color scheme representing professionalism, focus, and energy - suitable for exam preparation with Indian sensibilities.
 
-- **Primary Color**: Deep Blue (oklch(0.45 0.15 250)) - Represents focus and precision, used for primary actions and key UI elements
-- **Secondary Colors**: Soft Blue-Gray (oklch(0.65 0.05 240)) for supporting elements, Light Periwinkle (oklch(0.85 0.08 260)) for hover states
-- **Accent Color**: Vibrant Violet (oklch(0.55 0.20 280)) - Draws attention to active states and important metrics
+- **Primary Color**: Deep Blue (oklch(0.40 0.12 240)) - Represents trust and professionalism, used for main actions and header
+- **Secondary Colors**: Warm Orange (oklch(0.65 0.15 40)) for success highlights and positive feedback, Teal (oklch(0.55 0.12 180)) for supporting elements
+- **Accent Color**: Vibrant Saffron (oklch(0.70 0.18 60)) - Energizing accent for active states and achievements, culturally resonant
 - **Foreground/Background Pairings**:
-  - Background (White oklch(0.98 0 0)): Dark text (oklch(0.20 0 0)) - Ratio 15.8:1 ✓
-  - Card (Light Gray oklch(0.96 0 0)): Dark text (oklch(0.20 0 0)) - Ratio 14.5:1 ✓
-  - Primary (Deep Blue oklch(0.45 0.15 250)): White text (oklch(0.98 0 0)) - Ratio 8.2:1 ✓
-  - Accent (Vibrant Violet oklch(0.55 0.20 280)): White text (oklch(0.98 0 0)) - Ratio 5.1:1 ✓
-  - Muted (Soft Gray oklch(0.90 0 0)): Muted text (oklch(0.50 0 0)) - Ratio 5.9:1 ✓
-  - Success (Green oklch(0.65 0.15 145)): White text - Ratio 4.9:1 ✓
-  - Error (Red oklch(0.60 0.20 25)): White text - Ratio 5.2:1 ✓
+  - Background (Light Cream oklch(0.97 0.01 80)): Dark Navy text (oklch(0.25 0.05 240)) - Ratio 12.1:1 ✓
+  - Card (White oklch(0.99 0 0)): Dark Navy text (oklch(0.25 0.05 240)) - Ratio 13.5:1 ✓
+  - Primary (Deep Blue oklch(0.40 0.12 240)): White text (oklch(0.98 0 0)) - Ratio 9.2:1 ✓
+  - Secondary (Warm Orange oklch(0.65 0.15 40)): Dark text (oklch(0.25 0.05 240)) - Ratio 5.8:1 ✓
+  - Accent (Saffron oklch(0.70 0.18 60)): Dark text (oklch(0.25 0.05 240)) - Ratio 6.2:1 ✓
+  - Success (Green oklch(0.60 0.15 145)): White text - Ratio 5.1:1 ✓
+  - Error (Red oklch(0.55 0.20 25)): White text - Ratio 4.8:1 ✓
+  - Muted (Soft Gray oklch(0.88 0 0)): Muted text (oklch(0.50 0 0)) - Ratio 6.1:1 ✓
 
 ## Font Selection
 
-Typography should feel modern, technical, and highly legible at various sizes - optimized for extended reading and data display.
+Typography must support multiple scripts (Devanagari, Latin, regional Indian scripts) with high legibility and authentic exam font rendering.
 
-- **Primary Font**: Inter (Google Fonts) - Clean, neutral sans-serif with excellent legibility for UI elements and metrics
-- **Monospace Font**: JetBrains Mono (Google Fonts) - For typing practice area, ensures character-level precision visibility
+- **Primary Font**: Inter (Google Fonts) - Clean sans-serif for UI elements and English content
+- **Hindi Fonts**: Mangal (system fallback), Noto Sans Devanagari (Google Fonts) for authentic Hindi rendering
+- **Monospace Font**: JetBrains Mono (Google Fonts) for English typing practice, Noto Sans Mono for Hindi
 
 - **Typographic Hierarchy**: 
-  - H1 (App Title): Inter SemiBold/24px/tight tracking (-0.02em)
-  - H2 (Section Headers): Inter Medium/18px/normal tracking
-  - Body (Practice Text): JetBrains Mono Regular/20px/relaxed leading (1.7)
-  - Metrics (Numbers): Inter Bold/32px/tight tracking for emphasis
-  - Labels: Inter Regular/14px/wide tracking (0.01em) uppercase
-  - AI Tips: Inter Regular/15px/normal, italic for differentiation
+  - H1 (App Title): Inter Bold/26px/tight tracking (-0.02em) with Hindi: Noto Sans Devanagari Bold/28px
+  - H2 (Section Headers): Inter SemiBold/20px/normal tracking
+  - Body (Practice Text English): JetBrains Mono Regular/22px/relaxed leading (1.8)
+  - Body (Practice Text Hindi): Noto Sans Devanagari Regular/24px/relaxed leading (1.9)
+  - Metrics (Numbers): Inter Bold/36px/tight tracking for emphasis
+  - Labels: Inter Medium/13px/wide tracking (0.02em) uppercase
+  - AI Tips: Inter Regular/15px/normal, bilingual support
+  - Button Text: Inter SemiBold/15px
+
+Note: User-selectable fonts (KrutiDev, DevLys, etc.) will be loaded dynamically based on selection.
 
 ## Animations
 
-Animations should be subtle and functional, reinforcing user actions without demanding attention - think of smooth state transitions rather than celebratory flourishes.
+Animations should be purposeful and performance-focused, celebrating achievements while maintaining professional exam simulation atmosphere.
 
-- **Purposeful Meaning**: Motion communicates system response (button press feedback) and state changes (metric updates, session completion)
-- **Hierarchy of Movement**: Character highlighting receives highest priority (instant), followed by metric updates (smooth 200ms), then secondary UI transitions (300ms)
+- **Purposeful Meaning**: Motion confirms actions (key press feedback), celebrates milestones (confetti on high scores), guides attention (weak key highlights), and provides system feedback
+- **Hierarchy of Movement**: Character highlighting (instant 0ms), keystroke feedback (50ms pulse), metric updates (200ms), UI transitions (300ms), celebration animations (1-2s)
 
 ### Specific Animation Patterns:
-- **Character Feedback**: Instant color change (0ms) for correct/incorrect, subtle scale (1.02x, 100ms) on error
-- **Metric Updates**: Number counter animations (400ms ease-out) when values change significantly
-- **Session Complete**: Gentle fade-in of final stats card (300ms), subtle confetti burst only on personal best
-- **Button States**: 150ms ease for hover/press states, maintaining responsive feel
-- **Chart Updates**: Smooth line interpolation (500ms) when new data point added
+- **Character Feedback**: Instant color change for correct/incorrect, subtle shake (100ms) on error
+- **Metric Updates**: Smooth counter animations (300ms ease-out) for WPM/accuracy changes
+- **Confetti Celebration**: Physics-based confetti burst (2s) on achieving 50+ WPM or 97%+ accuracy
+- **Progress Bar**: Smooth fill animation (200ms) as typing progresses
+- **Heatmap Updates**: Gradual color transitions (500ms) on key performance data
+- **Modal Entrance**: Slide-up with fade (400ms ease-out) for result modal
+- **Button Interactions**: 100ms scale (0.95) on press, 200ms hover elevation
+- **Toast Notifications**: Slide-in from top (300ms) for alerts
+- **Chart Animations**: Smooth line drawing (800ms) on new data points
 
 ## Component Selection
 
 - **Components**: 
-  - Card (practice area, metrics panel, session results)
-  - Button (restart, settings, language switch)
-  - Progress bar (session timer visualization)
-  - Separator (dividing metrics from practice area)
-  - Tooltip (explaining metric calculations)
-  - Sheet/Drawer (settings panel for advanced options)
-  - Badge (language indicator, session status)
-  - Alert (paste prevention warning)
+  - Card (practice area, metrics panel, session results, leaderboard entries)
+  - Button (restart, pause/resume, submit, language/font/exam selectors)
+  - Select/Dropdown (language, font, duration, exam mode dropdowns in header)
+  - Progress bar (session timer linear + circular variants)
+  - Separator (dividing sections)
+  - Tooltip (metric explanations, keyboard shortcuts)
+  - Dialog (result modal with detailed stats)
+  - Sheet/Drawer (settings panel, leaderboard side panel on mobile)
+  - Badge (language indicator, exam mode badge, verified user badges)
+  - Tabs (switching between different views: practice/leaderboard/history)
+  - Switch (sound toggle, backspace mode, dark mode)
+  - Alert/Toast (paste warnings, session notifications)
+  - ScrollArea (long paragraph display, leaderboard scrolling)
+  - Accordion (collapsible metrics on mobile)
   
 - **Customizations**: 
-  - Custom TypingDisplay component with character-level highlighting
-  - Custom MetricCard with animated number counters
-  - Custom ProgressChart using recharts library for session history
-  - Custom KeyboardShortcut hint component
+  - Custom TypingDisplay with advanced character-level highlighting and line-by-line scroll
+  - Custom MetricCard with real-time animated counters and icon variants
+  - Custom ProgressChart using recharts for multi-metric visualization (WPM, accuracy, CPM over time)
+  - Custom KeyboardHeatmap component visualizing weak/strong keys with color gradient
+  - Custom VirtualKeyboard for mobile Hindi typing (Inscript/Remington layouts)
+  - Custom CertificateGenerator for PDF download with user stats
+  - Custom ConfettiEffect using canvas-confetti library
+  - Custom AICoachPanel with real-time tips and weakness detection
+  - Custom LeaderboardTable with filtering and ranking
+  - Custom ExamModeIndicator showing exam type and rules
 
 - **States**: 
-  - Buttons: Default/Hover (scale 1.02)/Active (scale 0.98)/Disabled (opacity 0.5)
-  - Input area: Focused (subtle glow ring)/Typing (hide cursor between chars)/Complete (read-only)
-  - Metrics: Updating (pulse animation)/Stable/Final (bold emphasis)
-  - Practice text characters: Pending (muted)/Current (accent border)/Correct (success green)/Incorrect (error red bg)
+  - Buttons: Default/Hover (lift shadow)/Active (scale 0.95)/Disabled (opacity 0.5 + cursor-not-allowed)/Loading (spinner)
+  - Input area: Focused (accent border glow)/Active Typing (pulse indicator)/Paused (dim overlay)/Complete (success border)/Error (red shake)
+  - Metrics: Live Updating (subtle pulse)/Milestone Reached (highlight flash)/Final (bold emphasis)
+  - Practice text characters: Pending (gray)/Current (accent underline + cursor)/Correct (green bg)/Incorrect (red bg + underline)/Skipped (yellow bg)
+  - Exam mode: Pre-start (countdown)/Active (strict rules)/Time Warning (red timer flash)/Complete (locked)
+  - Leaderboard entries: Current user (highlight bg)/Top 3 (gold/silver/bronze badges)/Verified (check badge)
 
 - **Icon Selection**: 
-  - @phosphor-icons/react throughout
+  - @phosphor-icons/react (weight="duotone" for main features, weight="bold" for actions)
+  - Keyboard (app logo)
   - ArrowCounterClockwise (restart)
   - Gear (settings)
   - ChartLine (progress/stats)
-  - Keyboard (typing mode indicator)
-  - Timer (session duration)
+  - Trophy (leaderboard)
   - Target (accuracy)
-  - Lightning (WPM)
-  - Warning (errors)
+  - Lightning (speed/WPM)
+  - Warning/X (errors)
+  - Clock/Timer (time tracking)
+  - Fire (streak/hot keys)
+  - Brain (AI coach)
+  - DownloadSimple (certificate download)
+  - ShareNetwork (social sharing)
+  - Play/Pause (session control)
+  - SpeakerHigh/SpeakerSlash (sound toggle)
+  - Translate (language switch)
+  - TextAa (font selector)
+  - Certificate (exam mode)
+  - CaretDown (dropdowns)
 
 - **Spacing**: 
   - Consistent use of Tailwind spacing scale
-  - Main container: px-6 py-4 (desktop), px-4 py-3 (mobile)
-  - Card padding: p-6 (desktop), p-4 (mobile)
-  - Metrics grid: gap-4
-  - Between sections: mb-8 (desktop), mb-6 (mobile)
+  - Header: px-6 py-4 (fixed, backdrop-blur)
+  - Main container: px-4 md:px-6 lg:px-8 py-6 (responsive)
+  - Card padding: p-4 md:p-6 (adaptive)
+  - Metrics grid: gap-3 md:gap-4
+  - Between major sections: space-y-6 md:space-y-8
+  - Button groups: gap-2 md:gap-3
+  - Form elements: space-y-4
 
 - **Mobile**: 
-  - Desktop: Two-column layout (80% practice / 20% metrics sidebar)
-  - Tablet: Metrics collapse below practice area, full-width stacked
-  - Mobile: Single column, metrics become compact horizontal cards
-  - Touch targets minimum 44x44px
-  - Collapsible metrics panel with show/hide toggle on mobile
+  - Desktop (>1024px): Three-column layout (sidebar-left metrics / center practice area / sidebar-right coach)
+  - Tablet (768-1024px): Two-column (practice area / collapsible sidebar)
+  - Mobile (<768px): Single column with fixed header, scrollable content, fixed bottom action bar
+  - Touch targets: minimum 44x44px for all interactive elements
+  - Virtual keyboard: slides up from bottom, doesn't cover input area
+  - Swipe gestures: swipe right for metrics drawer, swipe left for coach panel
+  - Bottom bar: always visible with Restart/Pause/Submit/Settings icons
+  - Collapsible sections: Accordion for metrics, expandable AI tips
+  - Font sizes: scale up 10-15% on mobile for better readability
