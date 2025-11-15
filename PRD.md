@@ -1,14 +1,14 @@
 # Planning Guide
 
-TypistPro India (टाइपिस्ट प्रो) - A comprehensive bilingual typing practice platform designed specifically for Indian government typing exams (SSC, RRB, High Court, etc.) with support for multiple Indian languages and fonts, real-time AI coaching, and exam-mode simulation.
+StenoMaster - An online Pitman shorthand practice and testing platform with real-time AI feedback, audio dictation support, and comprehensive stenography learning tools for mastering professional shorthand writing.
 
 **Experience Qualities**: 
-1. **Professional** - Clean, focused interface that mimics real exam environments while providing advanced practice tools and metrics.
-2. **Intelligent** - AI-powered real-time feedback identifies weak keys, suggests improvements, and adapts practice content to user needs.
-3. **Comprehensive** - Supports multiple Indian languages, fonts (KrutiDev, DevLys, Mangal, etc.), exam modes, and provides detailed analytics with leaderboards.
+1. **Professional** - Clean, focused interface similar to professional stenography tools with clear visual feedback for writing practice.
+2. **Intuitive** - Drawing canvas with natural pen/eraser tools, audio playback controls, and real-time metrics make learning shorthand accessible.
+3. **Educational** - Comprehensive character reference guides (vowels, consonants, briefs) with interactive examples and AI-powered feedback.
 
-**Complexity Level**: Complex Application (advanced functionality with comprehensive state management)
-  - Multi-language typing platform with font support, exam simulation modes, AI coaching, heatmap visualization, progress tracking, leaderboards, and PWA capabilities.
+**Complexity Level**: Complex Application (advanced functionality with drawing, audio, and AI features)
+  - Stenography practice platform with canvas drawing, audio dictation playback, symbol reference keyboard, real-time performance metrics, and AI-powered stroke analysis.
 
 ## Essential Features
 
