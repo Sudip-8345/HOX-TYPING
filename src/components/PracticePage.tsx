@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useKV } from '@github/spark/hooks'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, User } from '@phosphor-icons/react'
@@ -18,6 +18,7 @@ import {
 } from '@/lib/stenoUtils'
 
 export function PracticePage() {
+  const navigate = useNavigate()
   const [isActive, setIsActive] = useState(false)
   const [timeElapsed, setTimeElapsed] = useState(0)
   const [strokesDrawn, setStrokesDrawn] = useState(0)
@@ -111,11 +112,9 @@ export function PracticePage() {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link to="/">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft size={24} weight="bold" />
-                </Button>
-              </Link>
+              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                <ArrowLeft size={24} weight="bold" />
+              </Button>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">
                   Stenography Practice

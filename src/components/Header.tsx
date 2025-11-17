@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { 
   Keyboard, 
   Translate, 
@@ -9,7 +9,8 @@ import {
   SpeakerHigh, 
   SpeakerSlash,
   User,
-  House
+  House,
+  ArrowLeft
 } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import {
@@ -47,6 +48,7 @@ export const Header = memo(({
   onExamModeChange,
   onSoundToggle,
 }: HeaderProps) => {
+  const navigate = useNavigate()
   const currentLangConfig = languageFonts.find(lf => lf.language === language)
   const currentExamMode = examModes.find(em => em.id === examMode)
 
@@ -55,6 +57,9 @@ export const Header = memo(({
       <div className="container mx-auto px-4 md:px-6 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="h-9 w-9">
+              <ArrowLeft size={20} weight="bold" />
+            </Button>
             <Link to="/">
               <Keyboard size={32} weight="duotone" className="text-primary cursor-pointer hover:scale-110 transition-transform" />
             </Link>

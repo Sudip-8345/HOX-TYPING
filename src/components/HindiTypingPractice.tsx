@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useKV } from '@github/spark/hooks'
+import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -58,7 +59,15 @@ import {
 } from '@/lib/typingUtils'
 import { transliterate, TransliterationMode } from '@/lib/transliteration'
 
+interface UserProfile {
+  photoUrl: string
+  fullName: string
+  username: string
+}
+
 export function HindiTypingPractice() {
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const [language, setLanguage] = useState('hindi')
   const [font, setFont] = useState('noto')
   const [duration, setDuration] = useState(600)
@@ -83,6 +92,11 @@ export function HindiTypingPractice() {
   const [lastPressedKey, setLastPressedKey] = useState<string>('')
   
   const [sessions, setSessions] = useKV<SessionData[]>('typing-sessions', [])
+  const [profile] = useKV<UserProfile>('user-profile', {
+    photoUrl: '',
+    fullName: user?.name || '',
+    username: user?.name || ''
+  })
   
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -300,26 +314,47 @@ export function HindiTypingPractice() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || 'U'
+  }
+
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-foreground">
       <div className="border-b border-border/40 bg-[#1f1f1f]/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Hindi Typing Practice</h1>
-              <p className="text-sm text-muted-foreground">
-                Improve your Hindi typing speed and accuracy with real-time feedback
-              </p>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
+                <ArrowLeft size={20} weight="bold" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Hindi Typing Practice</h1>
+                <p className="text-sm text-muted-foreground">
+                  Improve your Hindi typing speed and accuracy with real-time feedback
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" className="relative">
                 <Bell size={20} weight="duotone" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
               </Button>
-              <Avatar>
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback><User size={20} /></AvatarFallback>
-              </Avatar>
+              <Link to="/profile">
+                <Avatar className="w-10 h-10 cursor-pointer ring-2 ring-primary/20 hover:ring-primary/40 transition-all">
+                  {profile?.photoUrl ? (
+                    <AvatarImage src={profile.photoUrl} alt={profile.fullName} />
+                  ) : (
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {getInitials(profile?.fullName || user?.name || 'User')}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+              </Link>
             </div>
           </div>
         </div>

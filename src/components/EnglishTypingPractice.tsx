@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useKV } from '@github/spark/hooks'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -52,6 +52,7 @@ function getRandomEnglishText() {
 }
 
 export function EnglishTypingPractice() {
+  const navigate = useNavigate()
   const [duration, setDuration] = useState(600)
   const [examMode, setExamMode] = useState('practice')
   const [soundEnabled, setSoundEnabled] = useState(true)
@@ -278,11 +279,9 @@ export function EnglishTypingPractice() {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link to="/">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft size={24} weight="bold" />
-                </Button>
-              </Link>
+              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                <ArrowLeft size={24} weight="bold" />
+              </Button>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">
                   English Typing Practice

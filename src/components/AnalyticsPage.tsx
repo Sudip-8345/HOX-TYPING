@@ -1,6 +1,9 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
+import { useKV } from '@github/spark/hooks'
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -22,7 +25,12 @@ import {
   ArrowLeft,
   Calendar,
   Users,
-  Activity
+  Activity,
+  SignOut,
+  Certificate,
+  TextAa,
+  Gear,
+  User
 } from '@phosphor-icons/react'
 import {
   LineChart,
@@ -41,6 +49,12 @@ import {
   Area,
   AreaChart
 } from 'recharts'
+
+interface UserProfile {
+  photoUrl: string
+  fullName: string
+  username: string
+}
 
 const progressTrendsData = [
   { month: 'Jan', wpm: 35, accuracy: 88, cpm: 175 },
@@ -101,49 +115,106 @@ const heatmapData = Array.from({ length: 13 }, (_, i) => ({
 export function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState('30d')
   const [selectedMetric, setSelectedMetric] = useState('wpm')
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [profile] = useKV<UserProfile>('user-profile', {
+    photoUrl: '',
+    fullName: user?.name || '',
+    username: user?.name || ''
+  })
+
+  const handleLogout = () => {
+    logout()
+    navigate('/')
+  }
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || 'U'
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft size={20} weight="bold" />
-                </Button>
-              </Link>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                  <ChartLine size={24} weight="bold" className="text-primary-foreground" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground">Progress & Analytics</h1>
-                  <p className="text-xs text-muted-foreground">Comprehensive performance insights</p>
-                </div>
+        <div className="container mx-auto px-4 md:px-6 py-4">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                <Keyboard size={24} weight="bold" className="text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold text-foreground">TypistPro India</h1>
+                <p className="text-xs text-muted-foreground">Welcome, {user?.name}</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
-              <Select value={timeRange} onValueChange={setTimeRange}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7d">Last 7 Days</SelectItem>
-                  <SelectItem value="30d">Last 30 Days</SelectItem>
-                  <SelectItem value="90d">Last 3 Months</SelectItem>
-                  <SelectItem value="1y">Last Year</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Link to="/practice">
-                <Button className="gap-2">
-                  <Lightning weight="fill" />
-                  Back to Practice
+            <div className="flex items-center gap-2 flex-wrap w-full md:w-auto justify-end">
+              <Link to="/start-type">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Lightning weight="bold" />
+                  Start Type
                 </Button>
               </Link>
+              
+              <Link to="/stenography">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Brain weight="bold" />
+                  Stenography
+                </Button>
+              </Link>
+              
+              <Link to="/exam-prep">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Certificate weight="bold" />
+                  Exam Hub
+                </Button>
+              </Link>
+              
+              <Link to="/leaderboard">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Trophy weight="bold" />
+                  Leaderboard
+                </Button>
+              </Link>
+              
+              <Link to="/analytics">
+                <Button variant="default" size="sm" className="gap-2">
+                  <ChartLine weight="bold" />
+                  Analytics
+                </Button>
+              </Link>
+              
+              <Link to="/profile">
+                <Avatar className="w-9 h-9 cursor-pointer ring-2 ring-primary/20 hover:ring-primary/40 transition-all">
+                  {profile?.photoUrl ? (
+                    <AvatarImage src={profile.photoUrl} alt={profile.fullName || user?.name} />
+                  ) : (
+                    <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
+                      {getInitials(profile?.fullName || user?.name || 'User')}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+              </Link>
             </div>
+          </div>
+          
+          <div className="mt-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Progress & Analytics</h2>
+            <Select value={timeRange} onValueChange={setTimeRange}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7d">Last 7 Days</SelectItem>
+                <SelectItem value="30d">Last 30 Days</SelectItem>
+                <SelectItem value="90d">Last 3 Months</SelectItem>
+                <SelectItem value="1y">Last Year</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </header>

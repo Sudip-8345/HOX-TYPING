@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useKV } from '@github/spark/hooks'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -19,6 +19,7 @@ import { SessionData } from '@/lib/typingUtils'
 export function LeaderboardPage() {
   const [sessions] = useKV<SessionData[]>('typing-sessions', [])
   const [filter, setFilter] = useState<'all' | 'today' | 'week'>('all')
+  const navigate = useNavigate()
 
   const filteredSessions = (sessions || [])
     .filter(session => {
@@ -84,11 +85,9 @@ export function LeaderboardPage() {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link to="/">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft size={24} weight="bold" />
-                </Button>
-              </Link>
+              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                <ArrowLeft size={24} weight="bold" />
+              </Button>
               <div>
                 <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
                   <Trophy size={28} weight="fill" className="text-accent" />
