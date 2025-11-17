@@ -21,7 +21,8 @@ import {
   Users,
   TextAa,
   SignOut,
-  CheckCircle
+  CheckCircle,
+  Microphone
 } from '@phosphor-icons/react'
 
 interface UserProfile {
@@ -47,9 +48,9 @@ export function HomePage() {
       .slice(0, 2) || 'U'
   }
 
-  // Redirect to analytics if user is logged in
+  // Redirect to dashboard if user is logged in
   if (isAuthenticated) {
-    return <Navigate to="/analytics" replace />
+    return <Navigate to="/dashboard" replace />
   }
 
   return (
@@ -130,6 +131,51 @@ export function HomePage() {
               </Button>
             </Link>
           </div>
+        </section>
+
+        {/* Dictation & Transcription Section */}
+        <section className="mb-16">
+          <Card className="overflow-hidden border-purple-500/20 hover:border-purple-500/40 transition-colors group">
+            <div className="p-8">
+              <div className="flex flex-col md:flex-row items-start gap-6">
+                <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 group-hover:scale-110 transition-transform">
+                  <Microphone className="h-8 w-8 text-white" weight="fill" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-2xl font-bold group-hover:text-purple-500 transition-colors">
+                      Dictation & Transcription Tests
+                    </h3>
+                    <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
+                      Free Trial Available
+                    </Badge>
+                  </div>
+                  <p className="text-muted-foreground mb-4 text-lg">
+                    Practice audio dictation tests for stenographer exams. Listen, take notes, decode, and get instant accuracy analysis with WPM calculation.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    <Badge variant="secondary">Audio Playback Control</Badge>
+                    <Badge variant="secondary">Speed: 0.75x - 1.5x</Badge>
+                    <Badge variant="secondary">Rough Notes Editor</Badge>
+                    <Badge variant="secondary">Accuracy Analysis</Badge>
+                    <Badge variant="secondary">English + Hindi</Badge>
+                    <Badge variant="secondary">KrutiDev/Mangal Support</Badge>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Link to="/dictation">
+                      <Button size="lg" className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90">
+                        <ArrowRight className="mr-2 h-5 w-5" weight="bold" />
+                        Try Free Tests
+                      </Button>
+                    </Link>
+                    <div className="text-sm text-muted-foreground">
+                      ✓ SSC Stenographer  ✓ High Court  ✓ Professional
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
         </section>
 
         <section className="mb-16">

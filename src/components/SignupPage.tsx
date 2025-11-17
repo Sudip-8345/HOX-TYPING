@@ -35,7 +35,7 @@ export function SignupPage() {
 
     try {
       await signup(name, email, password)
-      navigate('/analytics')
+      navigate('/dashboard')
     } catch (err) {
       setError('Failed to create account')
     } finally {

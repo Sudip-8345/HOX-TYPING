@@ -13,6 +13,11 @@ import { AnalyticsPage } from '@/components/AnalyticsPage'
 import { ExamPrepHub } from '@/components/ExamPrepHub'
 import { SettingsPage } from '@/components/SettingsPage'
 import { ProfilePage } from '@/components/ProfilePage'
+import { DictationHub } from '@/components/DictationHub'
+import { DictationTestPage } from '@/components/DictationTestPage'
+import { DictationAdmin } from '@/components/DictationAdmin'
+import { GeneralDashboard } from '@/components/GeneralDashboard'
+import { AICoachPage } from '@/components/AICoachPage'
 
 function App() {
   return (
@@ -22,6 +27,14 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <GeneralDashboard />
+              </ProtectedRoute>
+            } 
+          />
           <Route path="/start-type" element={<StartTypePage />} />
           <Route path="/practice" element={<HindiTypingPractice />} />
           <Route path="/english-practice" element={<EnglishTypingPractice />} />
@@ -37,6 +50,17 @@ function App() {
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/dictation" element={<DictationHub />} />
+          <Route path="/dictation/:testId" element={<DictationTestPage />} />
+          <Route path="/dictation/admin" element={<DictationAdmin />} />
+          <Route 
+            path="/ai-coach" 
+            element={
+              <ProtectedRoute>
+                <AICoachPage />
+              </ProtectedRoute>
+            } 
+          />
           <Route 
             path="/analytics" 
             element={

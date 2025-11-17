@@ -35,7 +35,8 @@ import {
   DeviceMobile,
   ShieldCheck,
   ClockCounterClockwise,
-  SignOut
+  SignOut,
+  SquaresFour
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
@@ -239,6 +240,12 @@ export function ProfilePage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Link to="/dashboard">
+                <Button variant="outline" className="gap-2">
+                  <SquaresFour size={18} weight="bold" />
+                  Dashboard
+                </Button>
+              </Link>
               {isEditing ? (
                 <>
                   <Button variant="outline" onClick={handleCancel}>
