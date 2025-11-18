@@ -1,9 +1,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { apiRequest } from '@/lib/apiClient'
 
 interface User {
   id: string
   name: string
   email: string
+  role?: string
 }
 
 interface AuthContextType {
@@ -12,52 +14,78 @@ interface AuthContextType {
   signup: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
   isAuthenticated: boolean
+  isLoading: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  const saveSession = (token: string, userData: User) => {
+    localStorage.setItem('authToken', token)
+    localStorage.setItem('user', JSON.stringify(userData))
+    setUser(userData)
+  }
 
   useEffect(() => {
-    // Check if user is logged in on mount
     const storedUser = localStorage.getItem('user')
     if (storedUser) {
       setUser(JSON.parse(storedUser))
     }
+
+    const token = localStorage.getItem('authToken')
+    if (!token) {
+      setIsLoading(false)
+      return
+    }
+
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await apiRequest<{ user: User }>('/api/auth/me', { auth: true })
+        localStorage.setItem('user', JSON.stringify(response.user))
+        setUser(response.user)
+      } catch (error) {
+        console.error('Failed to validate session', error)
+        localStorage.removeItem('authToken')
+        localStorage.removeItem('user')
+        setUser(null)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCurrentUser()
   }, [])
 
   const login = async (email: string, password: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    // Mock user data
-    const userData = {
-      id: '1',
-      name: email.split('@')[0],
-      email: email
-    }
-    
-    localStorage.setItem('user', JSON.stringify(userData))
-    setUser(userData)
+    const response = await apiRequest<{ user: User; token: string }>(
+      '/api/auth/login',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, password })
+      }
+    )
+
+    saveSession(response.token, response.user)
   }
 
   const signup = async (name: string, email: string, password: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    const userData = {
-      id: Date.now().toString(),
-      name: name,
-      email: email
-    }
-    
-    localStorage.setItem('user', JSON.stringify(userData))
-    setUser(userData)
+    const response = await apiRequest<{ user: User; token: string }>(
+      '/api/auth/signup',
+      {
+        method: 'POST',
+        body: JSON.stringify({ name, email, password })
+      }
+    )
+
+    saveSession(response.token, response.user)
   }
 
   const logout = () => {
     localStorage.removeItem('user')
+    localStorage.removeItem('authToken')
     setUser(null)
   }
 
@@ -67,7 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login, 
       signup, 
       logout, 
-      isAuthenticated: !!user 
+      isAuthenticated: !!user,
+      isLoading
     }}>
       {children}
     </AuthContext.Provider>

@@ -24,7 +24,8 @@ export function LoginPage() {
       await login(email, password)
       navigate('/dashboard')
     } catch (err) {
-      setError('Invalid email or password')
+      const message = err instanceof Error ? err.message : 'Unable to sign in'
+      setError(message)
     } finally {
       setLoading(false)
     }

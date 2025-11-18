@@ -1,3 +1,5 @@
+import { hindiLayoutCharMaps } from '@/lib/hindiLayouts'
+
 export const transliterationMap: Record<string, string> = {
   'a': 'अ',
   'aa': 'आ',
@@ -318,10 +320,20 @@ export function mangalKrutiTransliterate(text: string): string {
   return text.split('').map(char => mangalKrutiMap[char] || char).join('')
 }
 
-export type TransliterationMode = 'phonetic' | 'mangal-kruti' | 'direct'
+export type TransliterationMode = 'phonetic' | 'mangal-kruti' | 'direct' | 'remington' | 'inscript'
+
+const mapByLayout = (text: string, map: Record<string, string>): string =>
+  text
+    .split('')
+    .map((char) => map[char] ?? char)
+    .join('')
 
 export function transliterate(text: string, mode: TransliterationMode = 'phonetic'): string {
   switch (mode) {
+    case 'remington':
+      return mapByLayout(text, hindiLayoutCharMaps.remington)
+    case 'inscript':
+      return mapByLayout(text, hindiLayoutCharMaps.inscript)
     case 'mangal-kruti':
       return mangalKrutiTransliterate(text)
     case 'phonetic':

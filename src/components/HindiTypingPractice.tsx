@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { Switch } from '@/components/ui/switch'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { 
   ArrowLeft,
@@ -15,17 +13,10 @@ import {
   Play,
   Pause,
   CheckCircle,
-  Lightning,
-  Target,
-  Timer,
-  ChartLine,
-  Brain,
-  Fire,
   X,
   Backspace,
   Keyboard,
   Bell,
-  Gear,
   User
 } from '@phosphor-icons/react'
 import { 
@@ -35,15 +26,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Header } from '@/components/Header'
 import { TypingDisplay } from '@/components/TypingDisplay'
-import { MetricCard } from '@/components/MetricCard'
-import { AICoach } from '@/components/AICoach'
-import { ProgressChart } from '@/components/ProgressChart'
 import { HindiKeyboard } from '@/components/HindiKeyboard'
-import { TypingGuide } from '@/components/TypingGuide'
 import { RealTimeMetrics } from '@/components/RealTimeMetrics'
-import { AIFeedbackPanel } from '@/components/AIFeedbackPanel'
 import { toast } from 'sonner'
 import { 
   SessionData,
@@ -55,9 +40,11 @@ import {
   calculateAccuracy,
   calculateCPM,
   generateAITip,
-  detectWeakKeys
+  detectWeakKeys,
+  evaluatePromptAgainstInput
 } from '@/lib/typingUtils'
 import { transliterate, TransliterationMode } from '@/lib/transliteration'
+import { createTypingSession, TypingSessionPayload } from '@/lib/apiClient'
 
 interface UserProfile {
   photoUrl: string
@@ -67,13 +54,14 @@ interface UserProfile {
 
 export function HindiTypingPractice() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, isAuthenticated } = useAuth()
   const [language, setLanguage] = useState('hindi')
   const [font, setFont] = useState('noto')
   const [duration, setDuration] = useState(600)
   const [examMode, setExamMode] = useState('ssc')
   const [soundEnabled, setSoundEnabled] = useState(true)
-  const [keyboardMode, setKeyboardMode] = useKV<TransliterationMode>('keyboard-mode', 'direct')
+  const [keyboardMode, setKeyboardMode] = useKV<TransliterationMode>('keyboard-mode', 'remington')
+  const [imeBypass, setImeBypass] = useState(false)
 
   const [promptText, setPromptText] = useState('')
   const [userInput, setUserInput] = useState('')
@@ -105,6 +93,15 @@ export function HindiTypingPractice() {
   const currentFontConfig = languageFonts
     .find(lf => lf.language === language)
     ?.fonts.find(f => f.id === font)
+  const renderedFontClass = currentFontConfig?.className || 'font-hindi'
+  const hindiFontOptions = useMemo(
+    () => languageFonts.find(lf => lf.language === 'hindi')?.fonts || [],
+    []
+  )
+  const effectiveKeyboardMode = useMemo<TransliterationMode>(() => {
+    if (keyboardMode === 'direct') return 'direct'
+    return imeBypass ? 'direct' : keyboardMode
+  }, [imeBypass, keyboardMode])
 
   const grossWPM = calculateWPM(displayInput.length, timeElapsed)
   const netWPM = calculateNetWPM(grossWPM, errors, timeElapsed)
@@ -125,10 +122,31 @@ export function HindiTypingPractice() {
 
   const progress = promptText ? (displayInput.length / promptText.length) * 100 : 0
   const timeRemaining = currentExamMode?.duration ? currentExamMode.duration - timeElapsed : duration - timeElapsed
+  const transliterationPreview = useMemo(() => {
+    if (!displayInput) return ''
+    const startIndex = Math.max(0, displayInput.length - 80)
+    return displayInput.slice(startIndex)
+  }, [displayInput])
+
+  const syncSessionWithBackend = useCallback((payload: TypingSessionPayload) => {
+    if (!isAuthenticated) return
+
+    void createTypingSession(payload).catch((error) => {
+      console.error('Failed to sync typing session', error)
+      const message = error instanceof Error ? error.message : 'Unable to sync session'
+      toast.error('Failed to sync session', { description: message })
+    })
+  }, [isAuthenticated])
 
   useEffect(() => {
     loadNewText()
   }, [language])
+
+  useEffect(() => {
+    if (keyboardMode === 'direct' && imeBypass) {
+      setImeBypass(false)
+    }
+  }, [keyboardMode, imeBypass])
 
   useEffect(() => {
     if (isActive && !isPaused) {
@@ -195,6 +213,19 @@ export function HindiTypingPractice() {
     toast.info(isPaused ? 'Resumed' : 'Paused')
   }
 
+  const handleImeToggle = useCallback(() => {
+    if (keyboardMode === 'direct') {
+      toast.info('System IME already active')
+      return
+    }
+
+    setImeBypass(prev => {
+      const next = !prev
+      toast.info(next ? 'System IME enabled' : `${keyboardMode} layout active`)
+      return next
+    })
+  }, [keyboardMode])
+
   const handleRestart = () => {
     if (isActive || isComplete) {
       loadNewText()
@@ -231,6 +262,15 @@ export function HindiTypingPractice() {
       
       setSessions((current) => [...(current || []), newSession])
 
+      syncSessionWithBackend({
+        wpm: Math.max(0, Math.round(netWPM)),
+        accuracy: Number(accuracy.toFixed(2)),
+        language,
+        font: currentFontConfig?.name || font,
+        durationSec: Math.max(1, timeElapsed),
+        mode: currentExamMode?.id || 'custom'
+      })
+
       if (netWPM >= 50 || accuracy >= 97) {
         toast.success('🎉 Excellent performance!', {
           description: `${netWPM} WPM with ${accuracy}% accuracy`
@@ -260,31 +300,24 @@ export function HindiTypingPractice() {
       setBackspaceCount(prev => prev + 1)
       
       setUserInput(newValue)
-      const transliterated = keyboardMode !== 'direct' ? transliterate(newValue, keyboardMode) : newValue
+      const transliterated = effectiveKeyboardMode !== 'direct' ? transliterate(newValue, effectiveKeyboardMode) : newValue
+      const evaluation = evaluatePromptAgainstInput(promptText, transliterated)
       setDisplayInput(transliterated)
+      setCorrectChars(evaluation.correct)
+      setErrors(evaluation.errors)
+      setIncorrectChars(evaluation.incorrectMap)
       setCurrentIndex(transliterated.length)
       return
     }
 
-    const transliterated = keyboardMode !== 'direct' ? transliterate(newValue, keyboardMode) : newValue
-    const lastChar = transliterated[transliterated.length - 1]
-    const expectedChar = promptText[transliterated.length - 1]
-
-    if (transliterated.length > displayInput.length) {
-      if (lastChar === expectedChar) {
-        setCorrectChars(prev => prev + 1)
-      } else {
-        setErrors(prev => prev + 1)
-        setIncorrectChars(prev => {
-          const updated = new Map(prev)
-          updated.set(transliterated.length - 1, lastChar)
-          return updated
-        })
-      }
-    }
+    const transliterated = effectiveKeyboardMode !== 'direct' ? transliterate(newValue, effectiveKeyboardMode) : newValue
+    const evaluation = evaluatePromptAgainstInput(promptText, transliterated)
 
     setUserInput(newValue)
     setDisplayInput(transliterated)
+    setCorrectChars(evaluation.correct)
+    setErrors(evaluation.errors)
+    setIncorrectChars(evaluation.incorrectMap)
     setCurrentIndex(transliterated.length)
   }
 
@@ -292,6 +325,12 @@ export function HindiTypingPractice() {
     setLastPressedKey(e.key)
     
     setTimeout(() => setLastPressedKey(''), 200)
+
+    if (e.shiftKey && (e.code === 'Space' || e.key === ' ')) {
+      e.preventDefault()
+      handleImeToggle()
+      return
+    }
     
     if (e.ctrlKey || e.metaKey) {
       if (e.key === 'v') {
@@ -382,67 +421,181 @@ export function HindiTypingPractice() {
           </div>
 
           <div className="space-y-6">
-            <Card className="p-6 bg-[#242424]/80 backdrop-blur border-border/40">
-              <div className={`text-lg leading-relaxed mb-4 ${currentFontConfig?.className || 'font-hindi'}`}>
-                {promptText || 'Loading text...'}
+            <Card className="bg-[#242424]/80 backdrop-blur border-border/40 overflow-hidden">
+              <div className="flex flex-wrap items-center gap-4 px-6 py-4 border-b border-border/30">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Font</p>
+                  <Select value={font} onValueChange={setFont}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Choose font" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {hindiFontOptions.map(option => (
+                        <SelectItem key={option.id} value={option.id}>
+                          {option.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="ml-auto text-right">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">{currentExamMode?.duration ? 'Time Remaining' : 'Time Elapsed'}</p>
+                  <div className="text-2xl font-bold tabular-nums">{formatTime(timeRemaining >= 0 ? timeRemaining : timeElapsed)}</div>
+                  <p className="text-[11px] text-muted-foreground">Progress {Math.round(progress)}%</p>
+                </div>
               </div>
-              
-              <div className="relative">
+
+              <div className="relative bg-[#1a1a1a] border-b border-border/20">
+                {isPaused && (
+                  <div className="absolute inset-0 z-10 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+                    <Card className="p-6 text-center">
+                      <Pause size={36} weight="duotone" className="mx-auto mb-2 text-primary" />
+                      <p className="font-semibold">Session Paused</p>
+                      <p className="text-xs text-muted-foreground">Resume to continue typing</p>
+                    </Card>
+                  </div>
+                )}
+
+                {isComplete && (
+                  <div className="absolute inset-0 z-10 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+                    <Card className="p-6 text-center">
+                      <CheckCircle size={40} weight="duotone" className="mx-auto mb-2 text-success" />
+                      <p className="font-semibold">Session Complete</p>
+                      <p className="text-xs text-muted-foreground">Restart for a fresh passage</p>
+                    </Card>
+                  </div>
+                )}
+
+                <TypingDisplay
+                  promptText={promptText || 'Loading text...'}
+                  userInput={displayInput}
+                  currentIndex={currentIndex}
+                  isComplete={isComplete}
+                  fontClass={renderedFontClass}
+                />
+              </div>
+
+              <div className="px-6 py-5 space-y-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Active layout</p>
+                    <p className="text-lg font-semibold">
+                      {effectiveKeyboardMode === 'direct' ? 'System IME' : effectiveKeyboardMode}
+                    </p>
+                  </div>
+                  <div className="ml-auto flex gap-2">
+                    <Button variant="secondary" size="sm" onClick={handlePause}>
+                      {isPaused ? (
+                        <>
+                          <Play size={16} weight="fill" />
+                          <span>Resume</span>
+                        </>
+                      ) : (
+                        <>
+                          <Pause size={16} weight="fill" />
+                          <span>Pause</span>
+                        </>
+                      )}
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleRestart}>
+                      <ArrowCounterClockwise size={16} weight="bold" />
+                      Restart
+                    </Button>
+                  </div>
+                </div>
+
                 <textarea
                   ref={inputRef}
                   value={userInput}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
                   disabled={isComplete}
-                  placeholder={isActive ? "Start typing..." : "Click here to start..."}
-                  className={`w-full min-h-[80px] p-4 rounded-lg border-2 border-input/40 bg-[#1a1a1a] 
+                  placeholder={isActive ? 'Type here. Shift + Space toggles IME.' : 'Click here to start typing...'}
+                  className={`w-full min-h-[120px] p-4 rounded-lg border-2 border-input/40 bg-[#111111] 
                     text-lg leading-relaxed resize-none focus:outline-none focus:ring-2 
-                    focus:ring-ring focus:border-transparent transition-all
-                    ${currentFontConfig?.className || 'font-hindi'}
+                    focus:ring-ring focus:border-transparent transition-all ${renderedFontClass}
                     ${isComplete ? 'opacity-60' : ''}
                   `}
                 />
-                <div className="absolute top-3 right-3">
-                  <Gear size={20} weight="duotone" className="text-muted-foreground cursor-pointer hover:text-foreground transition-colors" />
+                <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+                  <span className="flex items-center gap-1">
+                    <Backspace size={14} />
+                    Backspace: {backspaceCount}
+                  </span>
+                  {currentExamMode && !currentExamMode.allowBackspace && (
+                    <Badge variant="destructive" className="text-xs flex items-center gap-1">
+                      <X size={12} />
+                      Backspace Locked
+                    </Badge>
+                  )}
+                  {imeBypass && keyboardMode !== 'direct' && (
+                    <Badge variant="outline" className="text-xs border-dashed border-primary/50 text-primary">
+                      System IME override
+                    </Badge>
+                  )}
                 </div>
-              </div>
 
-              {keyboardMode !== 'direct' && displayInput && (
-                <div className={`mt-3 p-3 rounded-lg bg-muted/20 text-lg ${currentFontConfig?.className || 'font-hindi'}`}>
-                  <div className="text-xs text-muted-foreground mb-1 font-sans">
-                    Hindi D<span className="text-destructive">:</span>yion <span className="text-muted-foreground">(de typgres)</span>
+                {effectiveKeyboardMode !== 'direct' && transliterationPreview && (
+                  <div className={`mt-2 rounded-lg border border-border/50 bg-black/30 p-3 ${renderedFontClass}`}>
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Rendered Hindi preview</p>
+                    <p className="text-xl mt-1">{transliterationPreview}</p>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </Card>
 
             <Card className="p-4 bg-[#242424]/80 backdrop-blur border-border/40">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold">Remington</span>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+                <div>
+                  <p className="text-sm font-semibold">Keyboard / IME mode</p>
+                  <p className="text-xs text-muted-foreground">Remington, Inscript, phonetic and system IME options</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Inscript</span>
-                  <Switch checked={keyboardMode === 'phonetic'} onCheckedChange={(checked) => setKeyboardMode(checked ? 'phonetic' : 'direct')} />
-                </div>
+                <Select value={keyboardMode} onValueChange={(value) => setKeyboardMode(value as TransliterationMode)}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Select mode" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="remington">Remington (Govt)</SelectItem>
+                    <SelectItem value="inscript">Inscript</SelectItem>
+                    <SelectItem value="phonetic">Phonetic (Smart Roman)</SelectItem>
+                    <SelectItem value="mangal-kruti">Mangal/Kruti</SelectItem>
+                    <SelectItem value="direct">System IME (No mapping)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <HindiKeyboard 
-                mode={keyboardMode || 'direct'} 
+                mode={keyboardMode}
                 pressedKey={lastPressedKey}
               />
-              <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
-                <span>1/23</span>
+              <div className="flex flex-wrap items-center justify-between mt-3 gap-2 text-xs text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Keyboard size={16} />
+                  <Badge variant="secondary" className="text-[11px] capitalize">{keyboardMode}</Badge>
+                  {imeBypass && keyboardMode !== 'direct' && (
+                    <Badge variant="outline" className="text-[11px] border-dashed border-primary/60 text-primary">
+                      System IME
+                    </Badge>
+                  )}
+                  <span className="text-[11px]">
+                    Active: {effectiveKeyboardMode === 'direct' ? 'System IME' : keyboardMode}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    onClick={handleImeToggle}
+                    disabled={keyboardMode === 'direct'}
+                  >
+                    <Keyboard size={14} />
+                    Toggle IME
                   </Button>
-                  <div className="flex-1 h-8 bg-[#1a1a1a] rounded"></div>
-                  <span>,</span>
-                  <span>.</span>
-                  <span className="px-3 py-1 bg-[#1a1a1a] rounded">sctuh</span>
+                  <span className="text-[11px]">Shift + Space</span>
                 </div>
               </div>
             </Card>
+
+            <HindiHelperPanel mode={effectiveKeyboardMode} fontClass={renderedFontClass} />
           </div>
 
           <div className="space-y-6">
@@ -460,5 +613,119 @@ export function HindiTypingPractice() {
         </div>
       </main>
     </div>
+  )
+}
+
+interface HelperTip {
+  trigger: string
+  output: string
+  note?: string
+}
+
+interface HelperConfig {
+  title: string
+  description: string
+  combos: HelperTip[]
+  notes?: string[]
+}
+
+const helperConfigs: Record<TransliterationMode, HelperConfig> = {
+  remington: {
+    title: 'Remington quick keys',
+    description: 'Government/typing test layout',
+    combos: [
+      { trigger: 'Shift + Q', output: 'औ' },
+      { trigger: 'Shift + W', output: 'ऐ' },
+      { trigger: 'D', output: '्', note: 'Halant / Virama' },
+      { trigger: 'Shift + ;', output: 'छ' },
+    ],
+    notes: ['Matras live on ASDF keys', 'Use Z row for nasal marks (ं,ँ)'],
+  },
+  inscript: {
+    title: 'Inscript essentials',
+    description: 'Bureau of Indian Standards layout',
+    combos: [
+      { trigger: 'F', output: 'ि', note: 'Pre-matra, renders before consonant' },
+      { trigger: 'J + D', output: 'र्द्', note: 'Consonant cluster with halant' },
+      { trigger: 'Shift + S', output: 'ए' },
+      { trigger: 'Shift + O', output: 'ध' },
+    ],
+    notes: ['Use D for halant, type following consonant immediately', 'Shift row outputs independent vowels'],
+  },
+  phonetic: {
+    title: 'Smart phonetic combos',
+    description: 'Type in Roman, get Devanagari',
+    combos: [
+      { trigger: 'k + i', output: 'कि', note: 'i matra auto-prepended' },
+      { trigger: 'k + aa', output: 'का' },
+      { trigger: 'sh + u', output: 'शु' },
+      { trigger: 'tra + i', output: 'त्रै' },
+    ],
+    notes: ['Double vowels (aa, ee, oo) create long matras', 'Add “h” for aspirated sounds (dh, th)'],
+  },
+  'mangal-kruti': {
+    title: 'Mangal/Kruti keys',
+    description: 'Legacy Krutidev-style typing',
+    combos: [
+      { trigger: 'Shift + 4', output: 'ृ' },
+      { trigger: 'Shift + F', output: 'ि', note: 'Place before consonant' },
+      { trigger: 'Shift + 6', output: 'ू' },
+      { trigger: 'Shift + X', output: 'ँ' },
+    ],
+    notes: ['Virama is on D key', 'Use Alt codes for rare characters if needed'],
+  },
+  direct: {
+    title: 'System IME tips',
+    description: 'Using Windows/macOS language bar',
+    combos: [
+      { trigger: 'Win + Space', output: 'Language picker' },
+      { trigger: 'Alt + Shift', output: 'Switch layout' },
+      { trigger: 'Ctrl + Space', output: 'Toggle IME' },
+    ],
+    notes: ['Keep OS IME on Hindi to bypass in-app mappings', 'Shift + Space inside editor flips back to app layout'],
+  },
+}
+
+function HindiHelperPanel({ mode, fontClass }: { mode: TransliterationMode; fontClass: string }) {
+  const config = helperConfigs[mode] || helperConfigs.phonetic
+
+  return (
+    <Card className="p-5 bg-[#242424]/80 backdrop-blur border-border/40">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div>
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Input helpers</p>
+          <h3 className="text-sm font-semibold">{config.title}</h3>
+          <p className="text-xs text-muted-foreground">{config.description}</p>
+        </div>
+        <Badge variant="outline" className="text-[11px] capitalize">{mode}</Badge>
+      </div>
+
+      {config.combos.length > 0 && (
+        <div className="space-y-2">
+          {config.combos.map((combo, idx) => (
+            <div
+              key={`${combo.trigger}-${idx}`}
+              className="flex items-center justify-between gap-3 rounded-lg border border-border/40 bg-black/30 px-3 py-2"
+            >
+              <div>
+                <div className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">{combo.trigger}</div>
+                {combo.note && (
+                  <p className="text-[11px] text-muted-foreground">{combo.note}</p>
+                )}
+              </div>
+              <div className={`text-xl font-semibold ${fontClass}`}>{combo.output}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {config.notes && config.notes.length > 0 && (
+        <ul className="mt-3 list-disc list-inside space-y-1 text-[11px] text-muted-foreground">
+          {config.notes.map((note, idx) => (
+            <li key={`${note}-${idx}`}>{note}</li>
+          ))}
+        </ul>
+      )}
+    </Card>
   )
 }

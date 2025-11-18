@@ -205,3 +205,41 @@ export const generateAITip = (stats: TypingStats, weakKeys: string[]): string =>
 
   return "Keep practicing consistently. Aim for small improvements in each session."
 }
+
+export interface PromptEvaluation {
+  correct: number
+  errors: number
+  comparedLength: number
+  incorrectMap: Map<number, string>
+}
+
+export const evaluatePromptAgainstInput = (promptText: string, typedText: string): PromptEvaluation => {
+  const incorrectMap = new Map<number, string>()
+  let correct = 0
+  let errors = 0
+  const maxLength = Math.min(promptText.length, typedText.length)
+
+  for (let i = 0; i < maxLength; i++) {
+    if (typedText[i] === promptText[i]) {
+      correct++
+    } else {
+      errors++
+      incorrectMap.set(i, typedText[i])
+    }
+  }
+
+  // Extra characters typed beyond prompt count as errors to penalize overruns
+  if (typedText.length > promptText.length) {
+    for (let i = promptText.length; i < typedText.length; i++) {
+      errors++
+      incorrectMap.set(i, typedText[i])
+    }
+  }
+
+  return {
+    correct,
+    errors,
+    comparedLength: typedText.length,
+    incorrectMap,
+  }
+}

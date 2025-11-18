@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useKV } from '@github/spark/hooks'
 import { Button } from '@/components/ui/button'
@@ -22,15 +22,10 @@ import {
   Brain,
   Warning,
   CheckCircle,
-  ArrowLeft,
   Calendar,
   Users,
   Activity,
-  SignOut,
-  Certificate,
-  TextAa,
-  Gear,
-  User
+  Certificate
 } from '@phosphor-icons/react'
 import {
   LineChart,
@@ -49,6 +44,7 @@ import {
   Area,
   AreaChart
 } from 'recharts'
+import { getTypingSummary, getTypingHeatmap, TypingSummaryResponse, TypingHeatmapPoint } from '@/lib/apiClient'
 
 interface UserProfile {
   photoUrl: string
@@ -56,7 +52,7 @@ interface UserProfile {
   username: string
 }
 
-const progressTrendsData = [
+const fallbackProgressTrendsData = [
   { month: 'Jan', wpm: 35, accuracy: 88, cpm: 175 },
   { month: 'Feb', wpm: 42, accuracy: 90, cpm: 210 },
   { month: 'Mar', wpm: 48, accuracy: 92, cpm: 240 },
@@ -107,26 +103,108 @@ const weakAreasData = [
   { key: 'ध', errors: 3, color: 'bg-success/50' }
 ]
 
-const heatmapData = Array.from({ length: 13 }, (_, i) => ({
+const fallbackHeatmapData = Array.from({ length: 13 }, (_, i) => ({
   label: String.fromCharCode(65 + i),
   value: Math.floor(Math.random() * 100)
 }))
 
+const RANGE_TO_DAYS: Record<string, number> = {
+  '7d': 7,
+  '30d': 30,
+  '90d': 90,
+  '1y': 365
+}
+
 export function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState('30d')
   const [selectedMetric, setSelectedMetric] = useState('wpm')
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
+  const { user, isAuthenticated } = useAuth()
+  const [summary, setSummary] = useState<TypingSummaryResponse | null>(null)
+  const [heatmap, setHeatmap] = useState<TypingHeatmapPoint[]>([])
+  const [isLoadingMetrics, setIsLoadingMetrics] = useState(false)
+  const [metricsError, setMetricsError] = useState<string | null>(null)
   const [profile] = useKV<UserProfile>('user-profile', {
     photoUrl: '',
     fullName: user?.name || '',
     username: user?.name || ''
   })
 
-  const handleLogout = () => {
-    logout()
-    navigate('/')
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    let isMounted = true
+    const loadAnalytics = async () => {
+      setIsLoadingMetrics(true)
+      setMetricsError(null)
+      const days = RANGE_TO_DAYS[timeRange] ?? 30
+
+      try {
+        const [summaryResponse, heatmapResponse] = await Promise.all([
+          getTypingSummary(days),
+          getTypingHeatmap(days)
+        ])
+
+        if (!isMounted) return
+        setSummary(summaryResponse)
+        setHeatmap(heatmapResponse)
+      } catch (error) {
+        if (!isMounted) return
+        console.error('Failed to load typing analytics', error)
+        const message = error instanceof Error ? error.message : 'Unable to load analytics data'
+        setMetricsError(message)
+      } finally {
+        if (isMounted) {
+          setIsLoadingMetrics(false)
+        }
+      }
+    }
+
+    void loadAnalytics()
+
+    return () => {
+      isMounted = false
+    }
+  }, [isAuthenticated, timeRange])
+
+  const stats = summary?.stats
+  const rangeDays = RANGE_TO_DAYS[timeRange] ?? 30
+
+  const formatDateLabel = (isoDate: string) => {
+    const date = new Date(isoDate)
+    return date.toLocaleDateString('en-IN', {
+      month: 'short',
+      day: 'numeric'
+    })
   }
+
+  const trendData = useMemo(() => {
+    if (!summary?.recent?.length) {
+      return fallbackProgressTrendsData
+    }
+
+    return [...summary.recent]
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      .map((session) => ({
+        month: formatDateLabel(session.createdAt),
+        wpm: session.wpm,
+        accuracy: Math.round(session.accuracy),
+        cpm: Math.max(0, Math.round(session.wpm * 5))
+      }))
+  }, [summary])
+
+  const heatmapChartData = useMemo(() => {
+    if (heatmap.length) {
+      return heatmap.map((row) => ({
+        label: formatDateLabel(row.date),
+        value: row.count
+      }))
+    }
+
+    return fallbackHeatmapData.map((item) => ({
+      label: item.label,
+      value: item.value
+    }))
+  }, [heatmap])
 
   const getInitials = (name: string) => {
     return name
@@ -230,6 +308,14 @@ export function AnalyticsPage() {
               <CardDescription>Track your typing speed, accuracy, and consistency</CardDescription>
             </CardHeader>
             <CardContent>
+              {metricsError && (
+                <div className="mb-4 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+                  {metricsError}
+                </div>
+              )}
+              {isLoadingMetrics && !metricsError && (
+                <p className="mb-4 text-sm text-muted-foreground">Syncing the latest sessions…</p>
+              )}
               <Tabs value={selectedMetric} onValueChange={setSelectedMetric} className="mb-4">
                 <TabsList className="grid w-full max-w-md grid-cols-3">
                   <TabsTrigger value="wpm">WPM</TabsTrigger>
@@ -239,7 +325,7 @@ export function AnalyticsPage() {
               </Tabs>
               
               <ResponsiveContainer width="100%" height={350}>
-                <AreaChart data={progressTrendsData}>
+                <AreaChart data={trendData}>
                   <defs>
                     <linearGradient id="colorWpm" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
@@ -285,25 +371,29 @@ export function AnalyticsPage() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">Overall Metrics</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-4xl font-bold text-primary mb-2">1,979</div>
-                <p className="text-sm text-muted-foreground">Total Practice Sessions</p>
+                <div className="text-4xl font-bold text-primary mb-2">{stats?.totalSessions ?? 0}</div>
+                <p className="text-sm text-muted-foreground">
+                  Total practice sessions (last {rangeDays} days)
+                </p>
                 <div className="mt-4 pt-4 border-t border-border flex items-center gap-2 text-success">
                   <TrendUp weight="bold" size={16} />
-                  <span className="text-sm font-semibold">+23% from last month</span>
+                  <span className="text-sm font-semibold">
+                    Avg WPM {stats ? `${stats.avgWpm}` : '—'}
+                  </span>
                 </div>
               </CardContent>
             </Card>
 
             <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Overall Quartiles</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Practice Time</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-4xl font-bold text-secondary mb-2">2,425</div>
-                <p className="text-sm text-muted-foreground">Words Typed This Month</p>
+                <div className="text-4xl font-bold text-secondary mb-2">{stats?.totalPracticeMinutes ?? 0}</div>
+                <p className="text-sm text-muted-foreground">Minutes typed (last {rangeDays} days)</p>
                 <div className="mt-4 pt-4 border-t border-border flex items-center gap-2 text-success">
                   <Fire weight="fill" size={16} />
-                  <span className="text-sm font-semibold">15-day streak active</span>
+                  <span className="text-sm font-semibold">Best WPM {stats?.bestWpm ?? 0}</span>
                 </div>
               </CardContent>
             </Card>
@@ -312,20 +402,20 @@ export function AnalyticsPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Performance Highlights</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="text-3xl font-bold text-accent mb-1">{stats?.avgAccuracy ?? 0}%</div>
+                  <p className="text-sm text-muted-foreground">Average accuracy</p>
+                </div>
                 <ScrollArea className="h-24">
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-start gap-2">
                       <CheckCircle weight="fill" size={16} className="text-success mt-0.5 flex-shrink-0" />
-                      <span>Achieved 60 WPM milestone</span>
+                      <span>Real-time data synced from your sessions</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle weight="fill" size={16} className="text-success mt-0.5 flex-shrink-0" />
-                      <span>95% accuracy maintained</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle weight="fill" size={16} className="text-success mt-0.5 flex-shrink-0" />
-                      <span>Top 10 in weekly leaderboard</span>
+                      <span>Track streaks and milestones automatically</span>
                     </li>
                   </ul>
                 </ScrollArea>
@@ -342,8 +432,14 @@ export function AnalyticsPage() {
               <CardDescription>Keystroke frequency analysis across practice sessions</CardDescription>
             </CardHeader>
             <CardContent>
+              {isLoadingMetrics && !metricsError && (
+                <p className="mb-4 text-sm text-muted-foreground">Loading activity heatmap…</p>
+              )}
+              {metricsError && (
+                <p className="mb-4 text-sm text-destructive">Heatmap unavailable: {metricsError}</p>
+              )}
               <ResponsiveContainer width="100%" height={180}>
-                <BarChart data={heatmapData}>
+                <BarChart data={heatmapChartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#333" opacity={0.2} />
                   <XAxis dataKey="label" stroke="#888" />
                   <YAxis stroke="#888" />

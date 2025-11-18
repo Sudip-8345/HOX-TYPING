@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useKV } from '@github/spark/hooks'
+import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -38,6 +39,7 @@ import {
   generateAITip,
   detectWeakKeys
 } from '@/lib/typingUtils'
+import { createTypingSession, TypingSessionPayload } from '@/lib/apiClient'
 
 const englishTexts = [
   "The quick brown fox jumps over the lazy dog near the riverbank. Practice makes perfect when you type with precision and care. Focus on accuracy first, then gradually increase your speed. Remember to maintain proper posture and hand position while typing.",
@@ -53,6 +55,7 @@ function getRandomEnglishText() {
 
 export function EnglishTypingPractice() {
   const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
   const [duration, setDuration] = useState(600)
   const [examMode, setExamMode] = useState('practice')
   const [soundEnabled, setSoundEnabled] = useState(true)
@@ -97,6 +100,16 @@ export function EnglishTypingPractice() {
 
   const progress = promptText ? (userInput.length / promptText.length) * 100 : 0
   const timeRemaining = currentExamMode?.duration ? currentExamMode.duration - timeElapsed : duration - timeElapsed
+
+  const syncSessionWithBackend = useCallback((payload: TypingSessionPayload) => {
+    if (!isAuthenticated) return
+
+    void createTypingSession(payload).catch((error) => {
+      console.error('Failed to sync typing session', error)
+      const message = error instanceof Error ? error.message : 'Unable to sync session'
+      toast.error('Failed to sync session', { description: message })
+    })
+  }, [isAuthenticated])
 
   useEffect(() => {
     loadNewText()
@@ -201,6 +214,15 @@ export function EnglishTypingPractice() {
       }
       
       setSessions((current) => [...(current || []), newSession])
+
+      syncSessionWithBackend({
+        wpm: Math.max(0, Math.round(netWPM)),
+        accuracy: Number(accuracy.toFixed(2)),
+        language: 'english',
+        font: 'default',
+        durationSec: Math.max(1, timeElapsed),
+        mode: currentExamMode?.id || 'practice'
+      })
 
       if (netWPM >= 60 || accuracy >= 97) {
         toast.success('🎉 Excellent performance!', {
